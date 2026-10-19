@@ -1,0 +1,84 @@
+/* ============ 授信面签 / 授信管理 ============
+   协议纸张风格：米白、双线、编号、印章、签名栏。
+   只做这一块的外观，不改 modal 的行为（关闭 / Esc / 焦点圈仍由 modal.js 管）。 */
+.loan-reception-modal.modal-card {
+  width: min(720px, 100%);
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  background: #fafafa;
+  color: #263238;
+  border: 1px solid #cfd8dc;
+  box-shadow: 0 24px 70px rgba(3, 12, 7, .42);
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+.loan-reception-modal .modal-head { align-items: center; border-bottom: 1px solid #e0e0e0; padding-bottom: 8px; }
+.loan-reception-modal .modal-head h2 { font-size: 1.05rem; letter-spacing: .06em; color: #263238; }
+.loan-reception-modal .modal-icon { color: #00796b; font-family: Georgia, serif; }
+.loan-reception { font-size: .84rem; }
+.loan-reception-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding-bottom: 10px; border-bottom: 3px double #263238; }
+.loan-reception-kicker { display: block; font: 600 .6rem/1.4 "DM Mono", ui-monospace, monospace; letter-spacing: .18em; color: #78909c; }
+.loan-reception-brand { display: block; margin-top: 3px; font: 700 1.02rem/1.25 "DM Mono", ui-monospace, monospace; letter-spacing: .06em; color: #263238; }
+.loan-reception-no { flex: 0 0 auto; border: 1px solid #cfd8dc; padding: 5px 8px; font: 600 .62rem/1.4 "DM Mono", ui-monospace, monospace; color: #78909c; background: #eceff1; }
+.loan-reception-lead { margin: 12px 0 10px; font-size: .78rem; line-height: 1.7; color: #546e7a; }
+.loan-reception-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border: 1px solid #e0e0e0; background: #ffffff; }
+.loan-reception-cell { padding: 7px 10px; border-bottom: 1px solid #eceff1; min-width: 0; }
+.loan-reception-cell:nth-child(odd) { border-right: 1px solid #eceff1; }
+.loan-reception-cell span { display: block; font: 600 .58rem/1.4 "DM Mono", ui-monospace, monospace; letter-spacing: .1em; color: #78909c; text-transform: uppercase; }
+.loan-reception-cell strong { display: block; margin-top: 2px; font-size: .76rem; line-height: 1.45; color: #263238; }
+.loan-draw { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; margin: 12px 0; padding: 10px 12px; background: #e0f2f1; border-left: 3px solid #00796b; }
+.loan-draw-field { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+.loan-draw-field > span { font: 600 .62rem/1.4 "DM Mono", ui-monospace, monospace; letter-spacing: .08em; color: #78909c; white-space: nowrap; }
+.loan-reception-input {
+  width: 150px; min-width: 0; border: 0; border-bottom: 1px solid #546e7a; background: transparent;
+  color: #263238; font: 700 1rem/1.4 "DM Mono", ui-monospace, monospace; text-align: right; outline: none;
+}
+.loan-reception-input:focus { border-bottom-color: #00897b; }
+.loan-draw-field em { font: 600 .66rem/1 "DM Mono", ui-monospace, monospace; color: #78909c; font-style: normal; }
+.loan-draw-max { font: 500 .62rem/1.4 "DM Mono", ui-monospace, monospace; color: #78909c; text-align: right; }
+.loan-terms { margin-top: 10px; }
+.loan-terms h4 { margin: 0 0 5px; font: 700 .68rem/1.4 "DM Mono", ui-monospace, monospace; letter-spacing: .1em; color: #455a64; text-transform: uppercase; }
+.loan-terms p { margin: 0; font-size: .69rem; line-height: 1.65; color: #546e7a; }
+.loan-e-sign { margin-top: 7px !important; padding-top: 6px; border-top: 1px dashed #e0e0e0; color: #78909c !important; font-size: .64rem !important; }
+.loan-signature { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 12px; padding-top: 4px; }
+.loan-signature-line { flex: 1; min-width: 0; display: grid; grid-template-columns: auto 1fr; align-items: baseline; gap: 2px 12px; border-bottom: 1px solid #546e7a; padding: 4px 0 7px; }
+.loan-signature-label { font: 600 .6rem/1.4 "DM Mono", ui-monospace, monospace; letter-spacing: .12em; color: #78909c; text-transform: uppercase; white-space: nowrap; }
+.loan-signature-name { font-family: "Segoe Script", "Brush Script MT", "Comic Sans MS", cursive; font-size: 1.22rem; line-height: 1.1; color: #00695c; transform: rotate(-2deg); transform-origin: left center; white-space: nowrap; }
+.loan-signature-line em { grid-column: 1 / -1; margin-top: 3px; font-size: .62rem; font-style: normal; color: #78909c; }
+.loan-seal {
+  flex: 0 0 auto; width: 56px; height: 56px; display: grid; place-items: center;
+  border: 2px solid #c62828; border-radius: 50%; color: #c62828;
+  font: 700 .56rem/1.1 "DM Mono", ui-monospace, monospace; letter-spacing: .06em;
+  text-align: center; transform: rotate(-12deg); opacity: .82;
+  box-shadow: inset 0 0 0 2px rgba(166, 66, 54, .16);
+}
+.loan-reception-modal .modal-foot { flex: 0 0 auto; border-top: 1px solid #e0e0e0; padding-top: 10px; }
+.loan-reception-modal .modal-body { overflow: auto; min-height: 0; }
+.loan-reception-modal .modal-foot .btn.primary { background: #00796b; border-color: #00796b; }
+.loan-reception-modal .modal-foot .btn { border-radius: 3px; letter-spacing: .04em; }
+
+.loan-sheet .modal-icon { font-family: Georgia, serif; }
+.loan-sheet .modal-message { line-height: 1.65; }
+
+@media (max-width: 560px) {
+  .loan-reception-modal.modal-card { padding: 14px; max-height: 92vh; }
+  .loan-reception-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .loan-reception-cell:nth-child(odd) { border-right: 1px solid #eceff1; }
+  .loan-reception-cell { padding: 6px 8px; }
+  .loan-reception-cell span { font-size: .53rem; }
+  .loan-reception-cell strong { font-size: .68rem; }
+  .loan-reception-kicker { font-size: .52rem; letter-spacing: .12em; }
+  .loan-reception-brand { font-size: .9rem; }
+  .loan-reception-no { font-size: .55rem; padding: 4px 6px; }
+  .loan-reception-lead { font-size: .72rem; margin: 8px 0; }
+  .loan-draw { flex-direction: column; align-items: stretch; gap: 6px; }
+  .loan-draw-field { justify-content: space-between; }
+  .loan-reception-input { width: 120px; }
+  .loan-draw-max { text-align: left; }
+  .loan-terms p { font-size: .64rem; }
+  .loan-signature { gap: 10px; }
+  .loan-signature-name { font-size: .9rem; }
+  .loan-seal { width: 46px; height: 46px; font-size: .5rem; }
+  .loan-reception-modal .modal-foot { padding-top: 8px; margin-top: 8px; }
+}

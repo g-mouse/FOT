@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>天才的陨落</title>
+<meta name="description" content="衍生品交易模拟终端：历史行情回放、模拟撮合、资金费与强平结算、六段执行校准。零构建、零依赖、可离线直开。">
+<meta name="theme-color" content="#eff8f4">
+<link rel="icon" href="./icon.png">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="stylesheet" href="./ui/styles/base.css">
+<link rel="stylesheet" href="./ui/styles/fonts.css">
+<link rel="stylesheet" href="./ui/styles/shell.css">
+<link rel="stylesheet" href="./ui/styles/trade.css">
+<link rel="stylesheet" href="./ui/styles/classic.css">
+<link rel="stylesheet" href="./ui/styles/modal.css">
+<link rel="stylesheet" href="./ui/styles/tutorial.css">
+<link rel="stylesheet" href="./ui/styles/intro.css">
+<link rel="stylesheet" href="./ui/styles/loan.css">
+<link rel="stylesheet" href="./ui/styles/institutional.css">
+</head>
+<body class="shell-body">
+
+<!-- ============ 本文件由 node tools/build-index.mjs 生成，不要手改 ============
+     脚本顺序来自每个模块自己的 CS.define(id, deps, …) 声明（拓扑排序）。
+     要加一个模块：建文件 + 写一行 CS.define，然后重跑这一支。
+     要改顺序：改依赖，不要改这个文件。
+     ========================================================== -->
+
+<header class="shell-top">
+  <div class="shell-brand">
+    <img src="./icon.png" alt="" width="24" height="24">
+    <div>
+      <strong id="shellBrandName">天才的陨落</strong>
+      <small id="shellBrandSub">FALL OF A TRADER</small>
+    </div>
+  </div>
+
+  <nav class="shell-modes" id="shellModes" role="tablist" aria-label="游戏模式"></nav>
+
+  <div class="shell-tagline" id="shellTagline" role="status" aria-live="polite"></div>
+
+  <div class="shell-actions" id="shellActions">
+    <button type="button" id="shellSettingsBtn" class="shell-btn" title="设置">⚙</button>
+    <button type="button" id="shellDebugBtn" class="shell-btn hidden" title="开发面板">⚑</button>
+  </div>
+</header>
+
+<div class="shell-boot" id="shellBoot">
+  <div class="shell-boot-inner">
+    <div class="shell-spinner" aria-hidden="true"></div>
+    <p id="shellBootText">正在载入…</p>
+  </div>
+</div>
+
+<main id="modeHost" class="shell-host"></main>
+
+<div id="modalRoot" class="modal-root hidden" aria-hidden="true"></div>
+<div id="toastRoot" class="toast-root" aria-live="polite"></div>
+<div id="windowLayer" class="window-layer" aria-hidden="true"></div>
+
+
+<!-- vendor：21 个库，全部来自 ../js-mod（MIT 池）。
+     每个库落地的文件、版本、许可证见 vendor/versions.json；
+     它们只挂自己的全局名，不碰 CS。 -->
+<script defer src="./vendor/lodash/lodash.min.js"></script>
+<script defer src="./vendor/dayjs/dayjs.min.js"></script>
+<script defer src="./vendor/he/he.js"></script>
+<script defer src="./vendor/i18next/i18next.min.js"></script>
+<script defer src="./vendor/validator/validator.min.js"></script>
+<script defer src="./vendor/fflate/index.js"></script>
+<script defer src="./vendor/loadjs/loadjs.umd.js"></script>
+<script defer src="./vendor/tinycolor2/tinycolor-min.js"></script>
+<script defer src="./vendor/clipboard/clipboard.min.js"></script>
+<script defer src="./vendor/simplex-noise/simplex-noise.js"></script>
+<script defer src="./vendor/floating-ui__core/floating-ui.core.umd.min.js"></script>
+<script defer src="./vendor/floating-ui__dom/floating-ui.dom.umd.min.js"></script>
+<script defer src="./vendor/tabbable/index.umd.min.js"></script>
+<script defer src="./vendor/focus-trap/focus-trap.umd.min.js"></script>
+<script defer src="./vendor/toastify-js/toastify.js"></script>
+<script defer src="./vendor/file-saver/FileSaver.min.js"></script>
+<script defer src="./vendor/interact.js/interact.min.js"></script>
+<script defer src="./vendor/superstruct/index.js"></script>
+<script defer src="./vendor/minisearch/index.js"></script>
+<script defer src="./vendor/memoize-one/memoize-one.min.js"></script>
+<script defer src="./vendor/animejs/anime.umd.min.js"></script>
+
+<!-- 内核与内容注册表（不是模块：它们提供 CS.define / CS.defineX 本身） -->
+<script defer src="./app/kernel.js"></script>
+<script defer src="./app/vendor-boot.js"></script>
+<!-- 开场动画（anime.js；无动画/自动化环境自行跳过） -->
+<script defer src="./app/intro.js"></script>
+
+<!-- 模块：101 个，按依赖拓扑序 -->
+<!-- core/ -->
+<script defer src="./core/base/util.js"></script>
+<script defer src="./core/events/events.js"></script>
+<script defer src="./core/text/expr.js"></script>
+<script defer src="./core/base/money.js"></script>
+<script defer src="./core/text/i18n.js"></script>
+<script defer src="./core/indicators/indicatorColors.js"></script>
+<script defer src="./core/indicators/indicatorState.js"></script>
+<script defer src="./core/indicators/registry.js"></script>
+<script defer src="./core/indicators/math.js"></script>
+<script defer src="./core/indicators/sma.js"></script>
+<script defer src="./core/indicators/ema.js"></script>
+<script defer src="./core/indicators/boll.js"></script>
+<script defer src="./core/indicators/supertrend.js"></script>
+<script defer src="./core/indicators/macd.js"></script>
+<script defer src="./core/indicators/rsi.js"></script>
+<script defer src="./core/indicators/kdj.js"></script>
+<script defer src="./core/indicators/atr.js"></script>
+<script defer src="./core/indicators/cci.js"></script>
+<script defer src="./core/market/resample.js"></script>
+<script defer src="./core/base/contentLoader.js"></script>
+<script defer src="./core/base/keyDispatch.js"></script>
+<script defer src="./core/base/autoPlay.js"></script>
+<script defer src="./core/animation/jitterPlan.js"></script>
+<script defer src="./core/animation/settleGate.js"></script>
+<script defer src="./core/animation/frameLoop.js"></script>
+<script defer src="./core/animation/tickEngine.js"></script>
+<script defer src="./core/market/marketData.js"></script>
+<script defer src="./core/market/filter.js"></script>
+<script defer src="./core/market/randomWalk.js"></script>
+<script defer src="./core/market/regime.js"></script>
+<script defer src="./core/text/sensitive.js"></script>
+<script defer src="./core/engine/ports.js"></script>
+<script defer src="./core/engine/clock.js"></script>
+<script defer src="./core/validate/validateSchema.js"></script>
+<script defer src="./core/validate/validateRefs.js"></script>
+<script defer src="./core/validate/validate.js"></script>
+<script defer src="./core/engine/accountEngine.js"></script>
+<script defer src="./core/engine/marginOps.js"></script>
+<script defer src="./core/engine/loanEngine.js"></script>
+<script defer src="./core/engine/marketEngine.js"></script>
+<script defer src="./core/engine/host.js"></script>
+<script defer src="./core/tutorial/tune.js"></script>
+<script defer src="./core/tutorial/lessons.js"></script>
+<script defer src="./core/tutorial/copy.js"></script>
+<script defer src="./core/tutorial/favorMath.js"></script>
+<script defer src="./core/tutorial/ride.js"></script>
+<script defer src="./core/tutorial/favor.js"></script>
+<script defer src="./core/tutorial/priceOverlay.js"></script>
+<script defer src="./core/tutorial/priceHistory.js"></script>
+<script defer src="./core/tutorial/progress.js"></script>
+<script defer src="./core/tutorial/entry.js"></script>
+<script defer src="./core/tutorial/openTrade.js"></script>
+<script defer src="./core/tutorial/sessionSettings.js"></script>
+<script defer src="./core/tutorial/record.js"></script>
+<script defer src="./core/tutorial/lockControls.js"></script>
+<script defer src="./core/tutorial/session.js"></script>
+<script defer src="./core/content/registry.js"></script>
+<script defer src="./core/content/index.js"></script>
+<!-- ui/ -->
+<script defer src="./ui/components/bits.js"></script>
+<script defer src="./ui/components/animSettings.js"></script>
+<script defer src="./ui/components/modalBody.js"></script>
+<script defer src="./ui/components/modal.js"></script>
+<script defer src="./ui/components/tutorialGuide.js"></script>
+<script defer src="./ui/components/chartReadout.js"></script>
+<script defer src="./ui/components/chartView.js"></script>
+<script defer src="./ui/components/chartSizing.js"></script>
+<script defer src="./ui/components/chartGeom.js"></script>
+<script defer src="./ui/components/chartCrosshair.js"></script>
+<script defer src="./ui/components/chartLineDrag.js"></script>
+<script defer src="./ui/components/chartPlot.js"></script>
+<script defer src="./ui/components/chartIndicators.js"></script>
+<script defer src="./ui/components/chartIndicatorLayer.js"></script>
+<script defer src="./ui/components/tradeIndicators.js"></script>
+<script defer src="./ui/components/tradeIndicatorSource.js"></script>
+<script defer src="./ui/components/tradeChartAnim.js"></script>
+<script defer src="./ui/components/tradeChart.js"></script>
+<script defer src="./ui/components/chartPanes.js"></script>
+<script defer src="./ui/components/tradePanels.js"></script>
+<script defer src="./ui/components/tradeOrders.js"></script>
+<script defer src="./ui/components/tradeConfirm.js"></script>
+<script defer src="./ui/components/tradeRisk.js"></script>
+<script defer src="./ui/components/tradeHooks.js"></script>
+<script defer src="./ui/components/tradeModel.js"></script>
+<script defer src="./ui/components/tradeIntents.js"></script>
+<script defer src="./ui/components/tradeTimeframe.js"></script>
+<script defer src="./ui/components/tradePriceLines.js"></script>
+<script defer src="./ui/components/tradeAnim.js"></script>
+<script defer src="./ui/components/tradeChrome.js"></script>
+<script defer src="./ui/components/tradePanel.js"></script>
+<script defer src="./ui/shell.js"></script>
+<!-- modes/ -->
+<script defer src="./modes/registry.js"></script>
+<script defer src="./modes/classic/settings.js"></script>
+<script defer src="./modes/classic/loan.js"></script>
+<script defer src="./modes/classic/previewLine.js"></script>
+<script defer src="./modes/classic/replay.js"></script>
+<script defer src="./modes/classic/tick.js"></script>
+<script defer src="./modes/classic/tutorial.js"></script>
+<script defer src="./modes/classic/settingsPanel.js"></script>
+<script defer src="./modes/classic/mode.js"></script>
+
+<script defer src="./app/boot.js"></script>
+</body>
+</html>

@@ -1,0 +1,310 @@
+/* ============ 壳层样式 ============
+   配色、字号、圆角、阴影**都在 ui/styles/base.css**（先加载）。
+   这一份只管壳层自己的排版：顶栏、页签、按钮、表格。
+   要在别处改颜色/圆角，改 base.css —— 不要在这里再定义一套。
+
+   无障碍（§5.3 [E]）：
+     · 字号缩放走 --fs（shell.js 的 setFontScale 写在这个变量上），
+       html 的 font-size 读它，全局 rem 基准跟着变 —— 没有 data-fontscale 这个属性
+     · 高对比主题靠 html[data-theme="contrast"]（覆盖在 base.css 里）
+     · 减弱动效靠 html[data-motion="off"]（base.css:157 与 tutorial.css 消费它）
+     · 正负 buff 不只靠红绿：一律附带 ▲/▼ 符号与文字标签（色盲友好） */
+
+html, body { margin: 0; padding: 0; }
+/* 字体族、字号、行高、底色都在 base.css —— 这里只补壳层特有的「竖排整页」布局 */
+body.shell-body { min-height: 100vh; display: flex; flex-direction: column; }
+body.shell-body.dragging { user-select: none; }
+
+/* ---------- 顶栏 ---------- */
+.shell-top {
+  display: flex; align-items: center; gap: 16px;
+  padding: 10px 18px; background: var(--card);
+  border-bottom: 1px solid var(--line); box-shadow: var(--shadow);
+  position: sticky; top: 0; z-index: 40; flex-wrap: wrap;
+}
+.shell-brand { display: flex; align-items: center; gap: 9px; }
+.shell-brand img { border-radius: 4px; image-rendering: pixelated; }
+.shell-brand strong { display: block; font-size: 1.02rem; letter-spacing: .01em; }
+.shell-brand small { display: block; font-size: .68rem; letter-spacing: .16em; color: var(--ink-soft); }
+
+/* 模式按钮允许换行：.mode-button 是 white-space:nowrap，不换行的话在
+   320px（100%）与 360px（字号 160%）下整条顶栏会把文档撑出横向滚动条，
+   连模式切换器自己都被裁到屏幕外（实测 360px/160% 溢出 104px）。 */
+.shell-modes { display: flex; flex-wrap: wrap; gap: 6px; background: var(--bg-soft); padding: 4px; border-radius: 999px; }
+/* 2026-10-19：coin 版只有一个模式，用户口径「📈 模拟模式去掉」——
+   按钮仍然会建（切换逻辑还在），但那排元素空了就整块收起来，不留一个空胶囊。 */
+.shell-modes:empty { display: none; }
+.mode-button {
+  border: 0; background: transparent; color: var(--ink-soft); cursor: pointer;
+  padding: 6px 14px; border-radius: 999px; font: inherit; font-size: .9rem;
+  display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+}
+.mode-button:hover { background: var(--card); color: var(--ink); }
+.mode-button.active { background: var(--accent); color: #fff; box-shadow: var(--shadow); }
+.mode-button .mode-icon { font-size: .95em; }
+/* 教程门禁那一句（「教程中 · 完成后解锁故事模式」）：
+   门禁没开时那一排只剩一颗按钮，旁边留一句说明，免得玩家以为功能少了。
+   它是提示不是按钮 —— 不可点、不抢焦点、窄屏直接藏掉（那儿连键盘都没有）。 */
+.mode-locked-note {
+  align-self: center; padding: 0 10px 0 4px; white-space: nowrap;
+  font-size: .74rem; color: var(--ink-soft); cursor: default;
+}
+@media (max-width: 640px) { .mode-locked-note { display: none; } }
+
+/* 顶栏那一行「当前执念 / 标语」：故事模式下会被逐字替换 [R11] */
+.shell-tagline {
+  /* 注意别用 flex: 1 1 240px：那会让它在窄屏上把模式按钮挤到下一行，
+     整条顶栏变成两行（430px 下实测过）。宁可让长执念被省略号截断。 */
+  flex: 0 1 auto; min-width: 0; margin-left: auto; text-align: right; color: var(--ink-soft);
+  font-size: .88rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.shell-tagline .obsession-stage { color: var(--accent); font-weight: 700; margin-right: 6px; }
+.shell-tagline .obsession-progress { color: var(--ink-soft); }
+
+.shell-actions { display: flex; gap: 6px; }
+.shell-btn {
+  border: 1px solid var(--line); background: var(--card); color: var(--ink-soft);
+  width: 32px; height: 32px; border-radius: 9px; cursor: pointer; font-size: .95rem; line-height: 1;
+}
+.shell-btn:hover { color: var(--ink); border-color: var(--accent); }
+
+/* ---------- 主体 ---------- */
+.shell-host { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+.classic-wrap { flex: 1 1 auto; min-height: 0; display: flex; }
+.classic-frame { border: 0; width: 100%; min-height: 78vh; display: block; }
+
+.mode-tabs { display: flex; gap: 4px; padding: 10px 18px 0; flex-wrap: wrap; }
+.mode-tab {
+  border: 1px solid var(--line); border-bottom: 0; background: var(--bg-soft);
+  color: var(--ink-soft); cursor: pointer; font: inherit; font-size: .88rem;
+  padding: 7px 14px; border-radius: 10px 10px 0 0;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.mode-tab:hover { color: var(--ink); }
+.mode-tab.active { background: var(--card); color: var(--ink); font-weight: 700; }
+.mode-tab-title { display: inline-flex; align-items: center; gap: 6px; }
+.mode-tab-badge {
+  background: var(--neg); color: #fff; border-radius: 999px; font-size: .68rem;
+  padding: 0 6px; min-width: 16px; text-align: center; font-weight: 700;
+}
+.mode-panels { flex: 1 1 auto; min-height: 0; padding: 0 18px 22px; }
+.mode-panel { padding-top: 14px; }
+.mode-panel.hidden { display: none; }
+
+/* ---------- 通用小组件 ---------- */
+.card {
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 14px 16px; box-shadow: var(--shadow);
+}
+.card + .card { margin-top: 12px; }
+.card h3 { margin: 0 0 8px; font-size: .98rem; }
+.card h4 { margin: 12px 0 6px; font-size: .9rem; color: var(--ink-soft); }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.row.between { justify-content: space-between; }
+.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
+.muted { color: var(--ink-soft); }
+.small { font-size: .84rem; }
+.tiny { font-size: .76rem; }
+.mono { font-family: "DM Mono", ui-monospace, SFMono-Regular, Menlo, monospace; font-variant-numeric: tabular-nums; }
+.hidden { display: none !important; }
+.nowrap { white-space: nowrap; }
+.pos { color: var(--pos); }
+.neg { color: var(--neg); }
+.mixed { color: var(--mixed); }
+.tag {
+  display: inline-block; padding: 1px 8px; border-radius: 999px;
+  background: var(--accent-soft); color: var(--accent); font-size: .74rem; margin: 0 4px 4px 0;
+}
+.pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: .74rem; border: 1px solid var(--line); }
+.btn {
+  border: 1px solid var(--line); background: var(--card); color: var(--ink);
+  border-radius: 9px; padding: 6px 12px; cursor: pointer; font: inherit; font-size: .86rem;
+}
+.btn:hover { border-color: var(--accent); color: var(--accent); }
+.btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+.btn.primary:hover { filter: brightness(1.06); color: #fff; }
+.btn.danger { color: var(--neg); border-color: var(--neg); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+input[type="text"], input[type="number"], input[type="search"], select, textarea {
+  border: 1px solid var(--line); border-radius: 9px; padding: 6px 10px; font: inherit;
+  font-size: .88rem; background: var(--card); color: var(--ink); max-width: 100%;
+}
+textarea { min-height: 90px; resize: vertical; line-height: 1.5; }
+hr.sep { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
+
+/* 数值条 */
+.statbar { display: flex; flex-direction: column; gap: 3px; }
+.statbar-head { display: flex; justify-content: space-between; font-size: .8rem; color: var(--ink-soft); }
+.statbar-track { height: 6px; border-radius: 999px; background: var(--bg-soft); overflow: hidden; }
+.statbar-fill { height: 100%; border-radius: 999px; background: var(--accent); }
+.statbar-fill.pos { background: var(--pos); }
+.statbar-fill.neg { background: var(--neg); }
+.statbar-fill.mixed { background: var(--mixed); }
+
+/* 启动遮罩 */
+.shell-boot {
+  position: fixed; inset: 0; background: var(--bg); z-index: 90;
+  display: flex; align-items: center; justify-content: center;
+}
+.shell-boot.hidden { display: none; }
+.shell-boot-inner { text-align: center; color: var(--ink-soft); }
+.shell-spinner {
+  width: 28px; height: 28px; margin: 0 auto 10px; border-radius: 50%;
+  border: 3px solid var(--line); border-top-color: var(--accent); animation: spin 900ms linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.shell-error { padding: 40px; text-align: center; color: var(--neg); }
+
+/* 通知 */
+.toast-root {
+  position: fixed; right: 16px; bottom: 16px; z-index: 95;
+  display: flex; flex-direction: column; gap: 8px; max-width: min(360px, 88vw);
+}
+.toast {
+  background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--accent);
+  border-radius: 10px; padding: 9px 12px; box-shadow: var(--shadow); font-size: .86rem;
+  animation: toast-in 180ms ease-out;
+}
+.toast.neg { border-left-color: var(--neg); }
+.toast.pos { border-left-color: var(--pos); }
+@keyframes toast-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* 弹窗 */
+.modal-root {
+  /* z-index 必须**高于启动遮罩**（.shell-boot = 90），否则首屏那个「新游戏」对话框
+     会被遮罩整块盖住 —— 看不见也点不到，而 init 正 await 在等玩家点它，
+     表现就是界面永远停在「正在进入模式…」。toast 仍在最上层（95）。 */
+  position: fixed; inset: 0; background: rgba(10, 26, 21, .42); z-index: 92;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.modal-card {
+  background: var(--card); border-radius: var(--radius); box-shadow: 0 12px 40px rgba(0, 0, 0, .28);
+  /* overflow-wrap：弹窗里会出现存档指纹、种子、错误堆栈这类没有断点的长串；
+     不换行的话卡片会横向滚到 4000px 以上，标题与底部按钮被推到屏幕外。 */
+  width: min(760px, 100%); max-height: 88vh; overflow: auto auto; overflow-wrap: anywhere; padding: 18px 20px;
+}
+.modal-card h2 { margin: 0 0 10px; font-size: 1.05rem; }
+.modal-foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+
+/* ---------- 世界种子画廊 ---------- */
+.world-gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+.world-card {
+  border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; background: var(--bg-soft); cursor: pointer;
+}
+.world-card:hover { border-color: var(--accent); }
+.world-card.picked { border-color: var(--accent); background: var(--accent-soft); }
+.world-card .seed { font-family: "DM Mono", monospace; font-size: .8rem; }
+
+/* ---------- 种子分享串 ---------- */
+.share-line { font-family: "DM Mono", monospace; font-size: .78rem; word-break: break-all; }
+.share-missing { color: var(--neg); font-weight: 700; }
+
+/* ---------- 悬浮窗（ui/components/floatWindow.js） ----------
+   口径照模拟模式那张「交易悬浮窗」：压在内容之上、按住标题栏可拖、可收起、可关掉。
+   桌面端用视口坐标（position:fixed，left/top 由 JS 写）；窄屏退回正常流 ——
+   360px 的屏上它会把底下的东西全挡住，那时「浮」没有意义。
+   它是个**零件**：邮件悬浮窗用它，以后交易页挂持仓 / 挂单浮窗也用它。 */
+.cs-float {
+  position: fixed; z-index: 45;
+  width: var(--cs-float-w, 360px); max-width: calc(100vw - 24px);
+  max-height: min(76vh, 660px);
+  display: flex; flex-direction: column; overflow: hidden;
+  background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+  box-shadow: 0 18px 45px rgba(20, 24, 50, .18); font-size: .82rem;
+}
+.cs-float.hidden { display: none; }
+.cs-float.dragging { border-color: var(--accent); box-shadow: 0 22px 55px rgba(20, 24, 50, .28); }
+.cs-float-head {
+  display: flex; align-items: center; gap: 8px; padding: 7px 10px;
+  background: var(--bg-soft); border-bottom: 1px solid var(--line); cursor: grab;
+}
+.cs-float.dragging .cs-float-head { cursor: grabbing; }
+.cs-float-glyph { color: var(--accent); }
+.cs-float-heading { display: flex; align-items: baseline; gap: 6px; min-width: 0; flex: 1 1 auto; }
+.cs-float-title { font-size: .86rem; }
+.cs-float-badge {
+  background: var(--neg); color: #fff; border-radius: 999px; font-size: .66rem;
+  padding: 0 6px; font-style: normal; font-weight: 700;
+}
+.cs-float-sub { color: var(--ink-soft); font-size: .72rem; }
+.cs-float-tools { display: flex; gap: 4px; margin-left: auto; }
+.cs-float-tool {
+  border: 1px solid var(--line); background: var(--card); color: var(--ink-soft);
+  width: 24px; height: 24px; border-radius: 7px; cursor: pointer; line-height: 1; font: inherit;
+}
+.cs-float-tool:hover { border-color: var(--accent); color: var(--accent); }
+.cs-float-tabs { display: flex; gap: 4px; padding: 6px 10px 0; }
+.cs-float-tab {
+  border: 1px solid var(--line); background: var(--card); color: var(--ink-soft);
+  border-radius: 8px; padding: 3px 10px; font: inherit; font-size: .76rem; cursor: pointer;
+}
+.cs-float-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.cs-float-body { overflow: auto; padding: 10px; }
+.cs-float.collapsed .cs-float-body, .cs-float.collapsed .cs-float-tabs { display: none; }
+
+/* 「关掉之后怎么再打开」：右下角那颗入口。没有它，× 按下去就再也找不回来。 */
+.cs-mail-bubble {
+  position: fixed; right: 16px; bottom: 16px; z-index: 44;
+  border: 1px solid var(--line); background: var(--card); color: var(--ink-soft);
+  border-radius: 999px; padding: 7px 13px; font: inherit; font-size: .86rem; cursor: pointer;
+  box-shadow: 0 10px 26px rgba(20, 24, 50, .16);
+}
+.cs-mail-bubble:hover { border-color: var(--accent); color: var(--accent); }
+.cs-mail-bubble.has-unread { background: var(--accent); border-color: var(--accent); color: #fff; }
+.cs-mail-bubble.hidden { display: none; }
+
+/* ---------- 交易悬浮窗那颗「$」（ui/components/tradeFloat.js） ----------
+   与信封同一套外形、同一套语义（关掉之后从这里再打开），只换符号与位置：
+   信封占 right:16 / bottom:16，这一颗往上叠 48px —— 两颗球同时出现时不互相盖住。
+   ★ 它是**跨页签**的入口：工具栏那颗「浮窗」只在交易页签可见，
+   而「一边读信一边盯持仓」要跨页签，所以这颗球必须一直在右下角。
+   符号是美元号（$）——「持仓 / 挂单 / 结算记录」这三样跟钱的关系一眼可辨；
+   手里有仓时变成实心（口径照信封的未读角标）。 */
+.cs-trade-bubble {
+  position: fixed; right: 16px; bottom: 64px; z-index: 44;
+  width: 38px; height: 38px; padding: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--line); background: var(--card); color: var(--ink-soft);
+  border-radius: 999px; font: inherit; font-size: 1rem; font-weight: 800; cursor: pointer;
+  box-shadow: 0 10px 26px rgba(20, 24, 50, .16);
+}
+.cs-trade-bubble:hover { border-color: var(--accent); color: var(--accent); }
+.cs-trade-bubble.has-position { background: var(--pos); border-color: var(--pos); color: #fff; }
+.cs-trade-bubble.hidden { display: none; }
+.cs-trade-bubble-glyph { line-height: 1; }
+/* 手里有仓时那一圈小角标：数字来自 tradeFloat 的 renderBubble（与浮窗 badge 同源） */
+.cs-trade-bubble.has-position::after {
+  content: attr(data-count);
+  position: absolute; top: -4px; right: -4px;
+  min-width: 16px; height: 16px; padding: 0 4px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--card); color: var(--pos);
+  border: 1px solid var(--pos); border-radius: 999px;
+  font-size: .62rem; font-weight: 800; line-height: 1;
+}
+
+@media (max-width: 720px) {
+  .shell-tagline { text-align: left; flex-basis: 100%; }
+  .shell-modes { order: 3; width: 100%; justify-content: space-between; flex-wrap: wrap; }
+  .mode-panels { padding: 0 10px 18px; }
+  /* 窄屏：悬浮窗进正常流，不再浮在内容上（那时它挡住的东西比它显示的多） */
+  .cs-float { position: static; width: auto; max-width: none; max-height: none; margin: 10px 0; }
+  .cs-float-head { cursor: default; }
+}
+
+/* ---------- 手机顶栏（2026-10-19）----------
+   原来窄屏会折成三行（品牌 / 两颗按钮 / 模式胶囊），一进页面先占掉半屏。
+   现在压成两行：品牌 + 按钮一行、模式胶囊一整行；副标题与标语在手机上藏掉。 */
+@media (max-width: 720px) {
+  .shell-top { padding: 8px 10px; gap: 8px; }
+  .shell-brand { flex: 1 1 auto; min-width: 0; }
+  .shell-brand img { width: 18px; height: 18px; }
+  .shell-brand strong { font-size: .95rem; }
+  .shell-brand small { display: none; }
+  .shell-actions { order: 2; }
+  .shell-btn { width: 30px; height: 30px; }
+  .shell-modes { order: 3; flex: 1 1 100%; padding: 3px; }
+  .mode-button { flex: 1 1 auto; justify-content: center; padding: 6px 10px; font-size: .84rem; }
+  .shell-tagline { display: none; }
+}

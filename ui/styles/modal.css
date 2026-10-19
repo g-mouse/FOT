@@ -1,0 +1,82 @@
+/* ============================================================================
+ * 弹窗正文与设置面板的版式（modal.css）
+ * ============================================================================
+ * ui/components/modalBody.js 画出来的那几块（分节明细 / 输入框 / 风险按钮），
+ * 以及 modes/classic/settingsPanel.js 的那几块（分组 / 勾选行 / 胶囊按钮）。
+ *
+ * 为什么单独一份：这两块都是**这一版新加**的结构，而 shell.css 里只有
+ * 「.modal-card / .modal-foot」那一层外壳。不写这一份的话它们仍然能用 ——
+ * 只是标签与数值会挤在一起（实测：`开仓价4,349.99 USDT`），
+ * 那种「能读但难受」的版式最难被发现，因为不报错、也不缺内容。
+ *
+ * 色值一律取 base.css 的 token，高对比主题与字号缩放自动跟着走。
+ * ========================================================================== */
+
+/* ---------- 弹窗正文 ---------- */
+.modal-body { display: block; color: var(--ink); }
+.modal-head { display: flex; align-items: center; gap: 10px; }
+.modal-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; flex: 0 0 auto;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft); color: var(--accent-ink);
+  font-size: 1rem;
+}
+.modal-icon.loss { background: var(--neg-soft); color: var(--neg); }
+.modal-message { margin: 8px 0 0; color: var(--ink-soft); }
+.modal-detail { margin: 8px 0 0; color: var(--ink-soft); font-size: var(--fs-sm); }
+.modal-detail.preline { white-space: pre-line; }
+
+/* 分节：一条细线 + 标题 + 两列读数 */
+.modal-sections { margin-top: 12px; }
+.modal-section { border-top: 1px solid var(--line-soft); padding-top: 10px; margin-top: 10px; }
+.modal-section:first-child { border-top: 0; padding-top: 0; margin-top: 6px; }
+.modal-section h3 {
+  margin: 0 0 6px; font-size: var(--fs-sm); color: var(--ink-soft);
+  font-weight: 600; letter-spacing: .02em;
+}
+.modal-text { margin: 0 0 6px; color: var(--ink); font-size: var(--fs-sm); line-height: var(--lh); }
+/* ★ 标签与数值一律两边对齐、中间留出空白：
+   靠在一起会读成「开仓价4,349.99 USDT」，而玩家要一眼分清哪一段是标签。 */
+.modal-row {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+  padding: 3px 0; font-size: var(--fs-sm);
+}
+.modal-row > span { color: var(--ink-soft); }
+.modal-row > strong { color: var(--ink); font-weight: 600; text-align: right; }
+.modal-row > strong.pos { color: var(--pos); }
+.modal-row > strong.neg { color: var(--neg); }
+.modal-row > strong.muted { color: var(--ink-faint); font-weight: 500; }
+
+/* 输入框（追加保证金那一类） */
+.modal-input { display: block; margin-top: 12px; }
+.modal-input > span { display: block; font-size: var(--fs-sm); color: var(--ink-soft); margin-bottom: 4px; }
+.modal-input-shell { display: flex; align-items: center; gap: 8px; }
+.modal-input-shell input {
+  flex: 1 1 auto; min-width: 0;
+  padding: 7px 10px; font: inherit; color: var(--ink);
+  background: var(--card); border: 1px solid var(--line-strong); border-radius: var(--radius-sm);
+}
+.modal-input-shell input:focus { outline: none; border-color: var(--accent); box-shadow: var(--focus-ring); }
+
+/* 风险弹窗那两颗动作（追加保证金 / 借款补仓） */
+.modal-risk-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+
+/* ---------- 设置面板 ---------- */
+.set-panel { display: block; max-height: min(70vh, 640px); overflow: auto; }
+.set-block { border-top: 1px solid var(--line-soft); padding-top: 10px; margin-top: 12px; }
+.set-block:first-child { border-top: 0; margin-top: 0; padding-top: 0; }
+.set-block h4 { margin: 0 0 8px; font-size: var(--fs-sm); color: var(--accent-ink); }
+.set-row { display: flex; align-items: center; gap: 12px; padding: 4px 0; flex-wrap: wrap; }
+.set-label { display: inline-flex; align-items: center; gap: 8px; color: var(--ink); font-size: var(--fs-sm); }
+.set-label input[type='checkbox'] { accent-color: var(--accent); width: 15px; height: 15px; }
+.set-hint { display: block; color: var(--ink-faint); font-size: var(--fs-xs); }
+.set-label:has(.set-hint) { align-items: flex-start; }
+.set-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+.set-pills .btn { padding: 4px 10px; font-size: var(--fs-xs); }
+
+/* ---------- 窄屏 ---------- */
+@media (max-width: 720px) {
+  .modal-row { gap: 10px; }
+  .set-panel { max-height: 60vh; }
+}

@@ -1,0 +1,38 @@
+/* ============ classic.css ============
+   模拟模式**独有**的那一点点样式。交易页本身两个模式共用，
+   样式在 story.css 的 .st-* 一段里（改它两个模式一起变）；这里只放
+   「回放控制条」与「引导期间那几个被锁住的控件」—— 那两处只有模拟模式会出现。
+
+   新手引导的界面（老师的话 / 进度条 / 聚光标记 / 那颗 ⏏）在 ui/styles/tutorial.css，
+   与交易页的教程观感同一份。
+
+   配色一律用 shell.css 的变量，所以高对比主题与字号缩放自动跟着走。
+   ================================================================= */
+
+/* ---------- 回放控制条 ----------
+   推进时间是模拟模式独有的动作（故事模式的推进入口在「时间线」页签），
+   所以它长在共用交易页**上面**，而不是塞进那张页里。 */
+.classic-replay { margin-bottom: 12px; }
+.st-replay-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.st-replay-actions .btn { flex: 0 0 auto; }
+.st-replay-actions .muted { margin-left: auto; }
+
+/* 交易页在控制条下面：它自己是一整块，这里只负责留出间距 */
+.classic-trade-host { display: block; }
+
+/* ---------- 引导期间被锁住的控件 ----------
+   「点得动但不算数」最让人恼火，所以引导把那几个开关直接置灰。
+   灰是灰，但不许看起来像坏了：留一点透明度 + 禁止光标，配合 title 里那句中性说明。 */
+.tut-locked { opacity: .55; cursor: not-allowed; }
+
+/* ---------- 窄屏：控制条排成两行，提示行不挤按钮 ---------- */
+@media (max-width: 720px) {
+  .st-replay-actions { gap: 6px; }
+  .st-replay-actions .btn { flex: 1 1 auto; }
+  .st-replay-actions .muted { flex: 1 1 100%; margin-left: 0; }
+}

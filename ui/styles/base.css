@@ -1,0 +1,163 @@
+/* ============================================================================
+ * 设计基座：颜色 / 字号 / 间距 / 圆角 / 阴影
+ * ============================================================================
+ * 为什么单独一份：这些值原来散在 shell / story / classic / windows / tutorial
+ * 五份样式里各写一遍，于是同一件事有好几个说法 —— 底色有 6 种近似绿、圆角有 10/12/14、
+ * 强调色一套绿（#1f8a70）一套靛蓝（#4f46e5）。结果不是「丑」，而是**累**：
+ * 眼睛要在好几套互不相干的灰度与色相之间反复切换。
+ * 修法是先定一份基座，其余样式只引用它。
+ *
+ * 这一版按「看久了不累」重定，四条依据：
+ *   1. **底色去掉饱和**。#eff8f4（薄荷底）在长时间注视下会让白卡片显得发绿、发脏；
+ *      换成近中性的 #f7f8fb，卡片才是干净的纯白，眼睛不用一直做色彩适应。
+ *   2. **边框更淡、阴影更柔**。原来边框 #d3e5dc 对卡片只有 1.31:1，
+ *      却又铺满整屏；配合 6px 投影与 12–14px 圆角，每一块都在喊「我是卡片」。
+ *      现在边框压到刚好看得见轮廓，阴影只留一层极淡的，卡片靠**留白**分组而不是靠框。
+ *   3. **强调色统一为靛蓝 #4f46e5**（对卡片 6.29:1，白字压在上面也 6.29:1）。
+ *      原来绿与靛蓝并存 —— 同一个界面里两种「主色」是最典型的视觉噪声源。
+ *   4. **字号与行高成比例**。正文 1rem/1.65、次级 .82、微标 .72，
+ *      不再出现 .68/.74/.78/.86 这种「差一点点」的字号 —— 它们让版面看着毛躁。
+ *
+ * ★ 涨跌色（--pos / --neg）用旧教程页那一对 #089981 / #f23645，**不许漂移**：
+ *   颜色在这里是数据的一部分。它们对白底只有 3.5–3.9:1，不到正文的 AA 线，
+ *   所以方向永远同时带 ▲/▼ 与文字标签（见 shell.css 的无障碍那一段），不靠颜色单独表达。
+ * ========================================================================== */
+
+:root {
+  /* ---------- 表面 ---------- */
+  --bg: #f7f8fb;            /* 应用底：近乎中性的冷灰，不发绿 */
+  --bg-soft: #eef0f6;       /* 次级面（分段控件底、表头） */
+  --card: #ffffff;
+  --card-hover: #fafbfd;
+
+  /* ---------- 文字 ---------- */
+  --ink: #1b2233;           /* 正文   15.9:1 */
+  --ink-soft: #5b6478;      /* 次级   5.9:1 */
+  --ink-faint: #8a93a6;     /* 微标   3.1:1（只用于装饰性小字，不承载信息） */
+
+  /* ---------- 线条 ---------- */
+  --line: #e3e6ee;          /* 默认轮廓：看得见但不抢眼 */
+  --line-soft: #eef0f5;     /* 分隔线（表格行、区块之间） */
+  --line-strong: #d5dae5;   /* 需要强调的边界（输入框聚焦前、分段控件外框） */
+
+  /* ---------- 强调（**全局唯一主色**） ---------- */
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;  /* 悬停/按下：更深，而不是更亮 —— 更亮会显脏 */
+  --accent-soft: #eef2ff;   /* 淡底：选中行、徽标、标签 */
+  --accent-line: #dbe2fe;   /* 淡底的边 */
+  --accent-ink: #48449b;    /* 淡底上的文字 */
+
+  /* ---------- 语义（涨跌**不许改**） ---------- */
+  --pos: #089981;
+  --pos-soft: #e7f8f2;
+  --neg: #f23645;
+  --neg-soft: #fdecee;
+  --mixed: #b06d00;
+  --mixed-soft: #fff4e0;
+  --warn: #b4453a;
+
+  /* ---------- 形状与节奏 ---------- */
+  --radius: 10px;           /* 卡片收敛到 10px：12–14 在密集版面里显得"圆胖" */
+  --radius-sm: 7px;         /* 按钮、输入框、小标签 */
+  --radius-pill: 999px;
+  /* 阴影只留一层极淡的环境光。原来 0 2px 10px 配 .08 太实，
+     叠在同样实的边框上就是「双层轮廓」，看久了很吵。 */
+  --shadow: 0 1px 2px rgba(20, 28, 48, .04);
+  --shadow-pop: 0 6px 24px rgba(20, 28, 48, .10);   /* 浮层（浮窗、下拉、弹窗） */
+  --focus-ring: 0 0 0 3px rgba(79, 70, 229, .16);
+
+  /* ---------- 字号（**固定档位**，不要再随手写 .74/.78） ---------- */
+  --fs: 15px;
+  --fs-hero: 1.5rem;        /* 页面主数值（总权益、现价） */
+  --fs-title: 1.06rem;      /* 区块标题 */
+  --fs-body: 1rem;
+  --fs-sm: .84rem;          /* 次级正文、表格 */
+  --fs-xs: .75rem;          /* 小标签、微标 */
+  --lh: 1.65;               /* 正文行高：中文在这个行高下最不容易糊成一团 */
+  --lh-tight: 1.35;         /* 标题与数字 */
+
+  /* ---------- 间距（4 的倍数，避免 9/11/13 这种「差一点」） ---------- */
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 24px; --sp-6: 32px;
+
+  /* 说明：字号基准由 --fs 一个变量决定（shell.js 的 setFontScale 写它）。
+     这里原来还有一个 --motion: 1 参与 font-size 的乘法，但没有任何代码写过它
+     —— 动效开关走的是 html[data-motion="off"]（本文件 :157），
+     那个乘法恒等于 ×1，是一条死代码。删掉它，免得后人以为动效设置会影响字号。 */
+}
+
+/* 高对比主题：只换颜色，形状与节奏沿用上面那一套。
+   注意它**放在 base 之后**才能生效（见 index.html 的加载顺序）。 */
+html[data-theme="contrast"] {
+  --bg: #08120f; --bg-soft: #0e1c17; --card: #10231d;
+  --ink: #f2fff9; --ink-soft: #a9c9bd; --ink-faint: #7f9c92;
+  --line: #2c4a40; --line-soft: #1d3a31; --line-strong: #3c6156;
+  --accent: #4fd6ac; --accent-hover: #6ee7b7; --accent-soft: #14342a; --accent-line: #235043; --accent-ink: #b6f0dc;
+  --pos: #6ee7b7; --neg: #ff8a7a; --mixed: #ffd479;
+  --shadow: 0 1px 3px rgba(0, 0, 0, .5);
+  --shadow-pop: 0 8px 28px rgba(0, 0, 0, .6);
+  --focus-ring: 0 0 0 3px rgba(79, 214, 172, .22);
+}
+
+/* ============================================================================
+ * 基础排版：让「默认」就是舒服的那一档，而不是每个组件各自调
+ * ========================================================================== */
+
+html { font-size: var(--fs); }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Nunito", "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+  font-size: var(--fs-body);
+  line-height: var(--lh);
+  /* 中文在浅色底上不要用纯黑：纯黑与白底的极端对比会让笔画边缘发毛。
+     --ink 已经是近黑（#1b2233），比 #000 柔和一档。 */
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4 { line-height: var(--lh-tight); margin: 0; font-weight: 700; }
+h1 { font-size: var(--fs-hero); }
+h2 { font-size: var(--fs-title); }
+h3 { font-size: var(--fs-title); }
+h4 { font-size: var(--fs-sm); }
+
+/* 数字一律等宽并对齐数位：钱、价格、百分比在列表里上下对齐才读得快 */
+.mono, .num, [data-num] {
+  font-family: "DM Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* 微标（KICKER / 表头那一类全大写小字）：
+   字重降到 600 并把字距收到 .08em —— 原来 .14~.16em 在大写中文混排时字与字之间会散开，
+   一屏里出现十几个这样的标签就像撒了一层芝麻。 */
+.kicker, .st-kicker, .shell-brand small {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* 次级文字统一走这一档，避免各处写 .78/.82/.86 */
+.muted, .tiny { color: var(--ink-soft); font-size: var(--fs-sm); }
+.tiny { font-size: var(--fs-xs); }
+
+/* ---------- 交互反馈：只改一处，全局一致 ---------- */
+button, input, select, textarea { font: inherit; }
+
+:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius-sm);
+}
+
+/* 尊重「减少动效」：过渡全部压到近乎瞬时，但不影响布局 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+}
+html[data-motion="off"] *, html[data-motion="off"] *::before, html[data-motion="off"] *::after {
+  animation-duration: .001ms !important; animation-iteration-count: 1 !important;
+  transition-duration: .001ms !important;
+}

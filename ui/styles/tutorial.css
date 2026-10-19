@@ -1,0 +1,588 @@
+/* ============================================================================
+ * 交易页的视觉：对齐旧教程页那一套（tutorial.css）
+ * ============================================================================
+ * 这一份**只作用于交易页**（`.st-trade` 里面）。理由：
+ *   · 教程只有交易这一屏，玩家的「教程印象」就是这一屏的观感；
+ *   · 而全局换主题会牵动人物 / 邮箱 / 状态 / 时间线四页 ——
+ *     它们与教程无关，换了只是无谓的风险（也会把已有的截图与断言全打翻）。
+ *
+ * 口径完全来自 game/styles.css（那一份是压缩过的，这些值是逐条抽出来的）：
+ *   品牌/强调   #4f46e5   ← 29 处，是教程的主色
+ *   强调（浅）  #7773c7
+ *   链接/次级   #48449b
+ *   细边框      #e7e9ef   面板底 #fff
+ *   账户条      #eef2ff 底 / #dbe2fe 边（教程那一格是淡靛蓝，不是白）
+ *   正文        #111827   次级 #5b6180   更淡 #8a91a0
+ *   涨 #089981   跌 #f23645   ← **绝对不许漂移**：颜色是数据的一部分
+ *
+ * ★ 为什么必须守住上面那两个涨跌色：蜡烛、指标线、账户条上的浮动盈亏
+ *   全用它们。色调一旦偏一点，「红绿」的语义就变了 ——
+ *   而图表配色同时有图表内部自己那一份（chartPlot 的 UP_RGB/DOWN_RGB），
+ *   两处不一致就会出现「蜡烛是 A 绿、下面数字是 B 绿」这种最难看的错。
+ *   所以这里改的是**容器与文字**，涨跌色原样不动。
+ *
+ * ★ 高对比主题（html[data-theme="contrast"]）下**不生效**：那时底色与文字都为了让位
+ *   可读性而变过，再叠一层淡靛蓝会打架。
+ *   ⚠ 守卫要判**值**、不能判属性在不在：html 上永远挂着 data-theme（默认是 "default"），
+ *   写成 :not([data-theme]) 会一条都不匹配 —— CSS 加载了、规则数也对、就是全不生效
+ *   （这一版第一稿就是这么坏的，靠读计算样式才发现）。本作只有 contrast 一个主题开关。
+ * ========================================================================== */
+
+html:not([data-theme='contrast']) .st-trade {
+  /* ★ 这里**不再**定义自己的一整套颜色。
+     原先有一份 --tp-brand/#4f46e5、--tp-line/#e7e9ef、--tp-ink/#111827 … 共 13 个，
+     而 base.css 定的是同一批值 —— 两份近似而不相等的色板正是「看久了累」的根源：
+     同一个界面里两套灰阶与色相在互相打架。现在全部改用 base 的 token。 */  color: var(--ink);
+}
+
+/* ---------- 教程那一版的基础字号与形状（只作用于交易页这一层） ----------
+   旧教程页没有设 --fs，浏览器的根字号就是 16px；新壳把 --fs 定成 15px（一个刻意的档位 token）。
+   差 6.7%，在一屏密排的数字里看得出来 —— 所以**只有交易页这一层**按旧版来。
+
+   ★ 为什么不直接改 :root 的 --fs / --radius / --ink：那是**全局** token，故事模式也读它们。
+     把整站放大 6.7%、把卡片圆角从 10 改成 14，是另一件事 ——
+     base.css 里还写着当初为什么选 10（「12–14 在密集版面里显得圆胖」）。
+     这里要的是「模拟模式这一页看起来像旧教程页」，不是「把整个应用改成旧版」。
+     所以三个 token 都在 .st-trade 这一层重新赋值：变量是会向下继承的，
+     `.st-trade .st-panel { border-radius: var(--radius) }` 自然就跟着变了。
+
+   ⚠ 字号那一组必须**一起换成 em**：--fs-* 原来都是 rem（跟着 :root 的 15px 走），
+     只把本层 font-size 调大的话，用 rem 的那些字仍然是 15px 基准 ——
+     一半大一半小，比不改还难看。em 在**使用它的那个元素**上按自己的字号算，整层才会一起放大。 */
+html:not([data-theme='contrast']) .st-trade {
+  --radius: 14px;
+  --ink: #111827;        /* 旧页的正文色（比新壳的 #1b2233 更深；对比度更高，不动可达性） */
+  font-size: 16px;
+  --fs-hero: 1.5em;
+  --fs-title: 1.06em;
+  --fs-body: 1em;
+  --fs-sm: .84em;
+  --fs-xs: .75em;
+}
+/* 账户条：旧页那几个数是 `min-height:100px; padding:14px 20px; gap:10px 16px;
+   grid-template-columns:minmax(210px,1.25fr) repeat(5,minmax(104px,.7fr))` ——
+   实测那一格高 124（新壳原来 79.7，差就差在这条 min-height 上）。
+   `.money-large` 是 `clamp(28px,2.6vw,38px)/1.1`、字距 -.04em、色 #19173d：总权益是个**大数**。
+   ✦ 水印是那条 strip 的招牌（130px 的星，压在右上角外侧一点），照抄。 */
+html:not([data-theme='contrast']) .st-trade .st-account {
+  min-height: 100px;
+  padding: 14px 20px;
+  gap: 10px 16px;
+  grid-template-columns: minmax(210px, 1.25fr) minmax(0, 2.75fr);
+  position: relative;
+  overflow: hidden;
+}
+html:not([data-theme='contrast']) .st-trade .st-account::after {
+  content: '✦';
+  position: absolute; right: 28px; top: -33px;
+  color: #cac9e9; font-size: 130px; line-height: 1;
+  pointer-events: none;
+}
+html:not([data-theme='contrast']) .st-trade .st-account-equity {
+  display: block;
+  font-size: clamp(28px, 2.6vw, 38px);
+  line-height: 1.1;
+  letter-spacing: -.04em;
+  color: #19173d;
+  margin-top: 3px;
+}
+/* 每个指标：左边一道竖线 + 内距 20 + 最小高 54，内容纵向居中（旧页 `.metric`） */
+html:not([data-theme='contrast']) .st-trade .st-metric {
+  border-left: 1px solid #b9b8db;
+  padding-left: 20px;
+  min-height: 54px;
+  display: flex; flex-direction: column; justify-content: center; gap: 8px;
+  position: relative; z-index: 1;
+}
+html:not([data-theme='contrast']) .st-trade .st-eyebrow {
+  font: 700 11px/1.2 "DM Mono", ui-monospace, monospace;
+  letter-spacing: .06em; color: #7876a3;
+}
+html:not([data-theme='contrast']) .st-trade .st-account-title { position: relative; z-index: 1; }
+/* ★ 上面那几条**权重比紧凑模式高**（多一个 html 元素），不补这两条的话
+   「紧凑模式」里的大号总权益会把那一条撑回 124 高 —— 紧凑模式就不紧凑了。 */
+html:not([data-theme='contrast']) .st-trade.compact .st-account { min-height: 0; padding: 8px 10px; }
+html:not([data-theme='contrast']) .st-trade.compact .st-account-equity { font-size: 1.1rem; letter-spacing: 0; }
+html:not([data-theme='contrast']) .st-trade.compact .st-metric { border-left: 0; padding-left: 0; min-height: 0; }
+
+/* ---------- 各面板的内距与间距：逐个抄旧页那几个数 ----------
+   旧教程页的 styles.css 是压缩过的，这几个数是从它的规则里**逐条抽出来**的
+   （`.market-panel` / `.chart-panel` / `.order-panel` / `.positions-panel` / `.workspace`）。
+   内距不影响功能，但它决定「一屏里塞得下多少、留白多厚」—— 这是「像不像」里最直观的一层。 */
+html:not([data-theme='contrast']) .st-trade .st-workspace { gap: 14px; }
+html:not([data-theme='contrast']) .st-trade .st-market { padding: 15px 10px; }
+html:not([data-theme='contrast']) .st-trade .st-chart-panel { padding: 17px 18px 12px; }
+
+/* ---------- 教程模式：隐藏交易对行情面板与交易对选择器 ---------- */
+html[data-tut-guide='active'] .st-market { display: none !important; }
+html[data-tut-guide='active'] .st-chart-controls .st-select { display: none !important; }
+
+html:not([data-theme='contrast']) .st-trade .st-col-right .st-panel { padding: 16px; }
+/* :not(.st-chart-panel)：这一条比上面那条图表规则**多一个类**，不加排除就会把它盖掉 ——
+   同一个文件里靠选择器权重打架，结果与「写在后面的赢」不一样，最容易看错。 */
+html:not([data-theme='contrast']) .st-trade .st-col-center .st-panel:not(.st-chart-panel) { padding: 14px 13px; }
+/* 指标栏：近白底（不是纯白）、圆角 10、内距 9/9/11，行距 10 ——
+   真正的规则在下面「指标栏与周期选择器」那一段（同一个文件里写两处会互相打架，
+   这里只留注释说明为什么不写在这儿）。 */
+
+/* ---------- 顶栏：按旧页 `.topbar` / `.brand` 那一套 ----------
+   旧页那几个数：`.topbar{height:60px;padding:0 clamp(18px,2.6vw,44px);gap:18px}`、
+   `.brand{min-width:205px;gap:12px}`、`.brand strong{font-size:20px;font-weight:900;letter-spacing:-.06em}`、
+   `.brand small{font:600 10px/1.3 'DM Mono';letter-spacing:.22em;color:#888f9e}`、
+   `.brand-mark{width:40px;height:40px;border-radius:14px;background:#201f41;transform:rotate(-8deg)}`。
+
+   ★ 这一层是**外壳**（两个模式共用），所以选择器上不加 `.st-trade` 限定；
+     只按主题做守卫（高对比主题有自己的色板，不去动它）。
+   ★ 品牌图标：新壳原来是一个 22×22 的圆形小图标；旧页是**深靛蓝的圆角方块、转 -8°、
+     图标落在里面**（那是那一版最好认的一处）。这里用 CSS 把同一个 <img> 做成那个方块 ——
+     不用改 HTML：给图片本身加底与圆角，再用 padding 把 ₿ 缩进中间。 */
+html:not([data-theme='contrast']) .shell-top {
+  /* min-height 而不是 height：正常宽度下就是 60（与旧页同高），
+     窄屏时外壳那几块要能换行（shell.css 里写着「模式按钮允许换行」）——
+     定死高度会让换行后的内容溢出。 */
+  min-height: 60px;
+  padding: 0 clamp(18px, 2.6vw, 44px);
+  gap: 18px;
+  font-size: 16px;
+  color: #111827;          /* 旧页的正文色；顶栏在外壳上，取不到 .st-trade 那一层的 --ink */
+}
+html:not([data-theme='contrast']) .shell-brand { min-width: 205px; gap: 12px; }
+html:not([data-theme='contrast']) .shell-brand img {
+  width: 40px; height: 40px; box-sizing: border-box; padding: 0;
+  background: transparent; border-radius: 10px; transform: none;
+}
+html:not([data-theme='contrast']) .shell-brand strong {
+  font-size: 20px; font-weight: 900; letter-spacing: -.06em; line-height: 1.1;
+}
+html:not([data-theme='contrast']) .shell-brand small {
+  font: 600 10px/1.3 "DM Mono", ui-monospace, monospace;
+  letter-spacing: .22em; color: #888f9e; margin-top: 5px;
+}
+
+/* ---------- 交易悬浮窗：按旧页 `.float-window` 那一套 ----------
+   ★ 这是**外壳级**的组件（`.cs-float` 在 shell.css 里，故事模式的邮件浮窗也用同一套），
+     所以按 `[data-float='trade.float']` 精确限定到交易悬浮窗 —— 邮件浮窗保持外壳的观感。
+   旧页那几个数：圆角 15、字号 12、标题栏 `9px 10px 9px 12px` + 底 #f6f6fb、标题 #3f3c7a 900、
+   工具按钮 22×22 圆角 7、✦ 是粉色的（#ec8f98）。 */
+html:not([data-theme='contrast']) .cs-float[data-float='trade.float'] {
+  border-radius: 15px;
+  font-size: 12px;
+  /* 悬浮窗挂在**外壳**的浮层上，不在 .st-trade 里面 —— 本层给 .st-trade 设的 --ink 到不了它，
+     所以这里单独把正文色写一遍（旧页的正文色是 #111827）。 */
+  color: #111827;
+}
+html:not([data-theme='contrast']) .cs-float[data-float='trade.float'] .cs-float-head {
+  padding: 9px 10px 9px 12px;
+  background: #f6f6fb;
+}
+html:not([data-theme='contrast']) .cs-float[data-float='trade.float'] .cs-float-title {
+  font-size: 12px; font-weight: 900; color: #3f3c7a; letter-spacing: .02em;
+}
+html:not([data-theme='contrast']) .cs-float[data-float='trade.float'] .cs-float-badge,
+html:not([data-theme='contrast']) .cs-float[data-float='trade.float'] .cs-float-glyph { color: #ec8f98; }
+html:not([data-theme='contrast']) .cs-float[data-float='trade.float'] .cs-float-tool {
+  width: 22px; height: 22px; border-radius: 7px; padding: 0;
+  font: 900 13px/1 Nunito, sans-serif;
+}
+
+/* ---------- 面板与容器 ---------- */
+html:not([data-theme='contrast']) .st-trade .st-panel {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+html:not([data-theme='contrast']) .st-trade .st-toolbar {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+/* 小标题（TRADE / MARKET WATCH / PRICE CHART …）：教程用的是靛蓝的小字距大写 */
+html:not([data-theme='contrast']) .st-trade .st-kicker { color: var(--accent-ink); letter-spacing: .08em; }
+html:not([data-theme='contrast']) .st-trade .st-quiet,
+html:not([data-theme='contrast']) .st-trade .muted { color: var(--ink-soft); }
+html:not([data-theme='contrast']) .st-trade .tiny { color: var(--ink-faint); }
+
+/* ---------- 账户条：教程那一格是淡靛蓝底（类名是 .st-account，别写成 -strip） ---------- */
+html:not([data-theme='contrast']) .st-trade .st-account {
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-line);
+  border-radius: var(--radius);
+}
+html:not([data-theme='contrast']) .st-trade .st-account .st-metric > span,
+html:not([data-theme='contrast']) .st-trade .st-account-title { color: var(--ink-soft); }
+html:not([data-theme='contrast']) .st-trade .st-account .st-metric > strong,
+html:not([data-theme='contrast']) .st-trade .st-account-equity { color: var(--ink); }
+
+/* ---------- 按钮 ----------
+   ⚠ 交易页里的按钮类名是 `btn`（由 ui/components/bits.js 的 button() 生成），
+     不是 `st-btn` —— 上一稿照着自己起的名字写了一串 .st-btn，全是空规则：
+     一条都没生效，而且**不报错**（CSS 没有「未知类名」这种错）。
+     所以这里只写真实存在的类，并且靠 tools/trade-panel-probe.mjs 读计算样式来确认。
+   ⚠ 买/卖那两颗是 `class="st-trade long|short"`，**不是** .btn.primary：
+     它们是**方向**不是品牌色，所以下面这些规则碰不到它们（涨跌色不许漂移）。 */
+html:not([data-theme='contrast']) .st-trade .btn {
+  border-radius: var(--radius-sm);
+  border-color: var(--line-soft);
+}
+html:not([data-theme='contrast']) .st-trade .btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+html:not([data-theme='contrast']) .st-trade .btn.primary:hover { background: var(--accent-hover); }
+/* 工具栏那几颗（自动播放 / 浮窗 / 紧凑模式）：真实类是 .st-tool */
+html:not([data-theme='contrast']) .st-trade .st-tool {
+  border-radius: var(--radius-sm);
+  border-color: var(--line-soft);
+}
+html:not([data-theme='contrast']) .st-trade .st-tool.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* ---------- 页签与选中态 ---------- */
+html:not([data-theme='contrast']) .st-trade .st-ws-tab.active,
+html:not([data-theme='contrast']) .st-trade .st-ws-tab[aria-selected='true'] {
+  background: var(--accent-soft);
+  border-color: var(--accent-line);
+  color: var(--accent-hover);
+}
+html:not([data-theme='contrast']) .st-trade .st-count {
+  background: var(--accent-soft);
+  color: var(--accent-hover);
+}
+html:not([data-theme='contrast']) .st-trade .st-pair-row.active,
+html:not([data-theme='contrast']) .st-trade .st-pair-row[aria-selected='true'] {
+  background: var(--accent-soft);
+  border-color: var(--accent-line);
+}
+
+/* ---------- 表单控件 ---------- */
+html:not([data-theme='contrast']) .st-trade input,
+html:not([data-theme='contrast']) .st-trade select,
+html:not([data-theme='contrast']) .st-trade textarea {
+  background: var(--card);
+  border-color: var(--line-soft);
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+}
+html:not([data-theme='contrast']) .st-trade input:focus,
+html:not([data-theme='contrast']) .st-trade select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: var(--focus-ring);
+}
+/* 杠杆滑块的轨道/已选段：跟着主色走，否则会留一段绿 */
+html:not([data-theme='contrast']) .st-trade input[type='range'] { accent-color: var(--accent); }
+
+/* ---------- 指标栏与周期选择器 ----------
+   ⚠ 这一条原来写的是 `background: var(--card); border-radius: var(--radius)` ——
+   于是它把上面（第 76 行那一条）设的近白底与 10px 圆角又盖回去了：
+   同一个文件里两条规则打同一个人，后一条赢，而**两条都在、都不报错**，
+   表现是「改了没反应」。现在这里就是唯一的一处，值按旧页来（近白底 / 圆角 10）。 */
+html:not([data-theme='contrast']) .st-trade .st-ind {
+  background: #fbfbfd;
+  border-color: var(--line);
+  border-radius: 10px;
+  padding: 9px 9px 11px;
+  gap: 10px;
+  /* 旧页那一栏是 `max-height:400px; overflow:auto` —— 与旁边的画布**等高但封顶**。
+     不封顶的话它会跟着网格拉满（实测 593.8 高，空着一大片），
+     而指标开了三四个之后本该出现的内滚也没了。这一档保持不变。
+     ★ 它下边那块「列尾空地」会引来别的麻烦（右下角那张交易悬浮窗正好落进去、
+     横向压住最右边 15px 的按钮列）—— 那个在 floatWindow.railGuard() 里让浮窗往下避，
+     不在这里靠拉高卡片解决：卡片一拉高，空出来的地方只是从卡片外挪到卡片里，
+     而浮窗照样压在它的下沿上（实测只是把 15px 的压盖换成 82px 的重叠）。 */
+  max-height: 400px;
+  overflow: auto;
+}
+html:not([data-theme='contrast']) .st-trade .st-ind-head { border-bottom-color: var(--line); }
+html:not([data-theme='contrast']) .st-trade .st-ind-row.on { background: rgba(79, 70, 229, .06); }
+html:not([data-theme='contrast']) .st-trade .st-ind-kind {
+  background: rgba(79, 70, 229, .12);
+  color: var(--accent-hover);
+}
+html:not([data-theme='contrast']) .st-trade .st-tf-btn.primary {
+  background: var(--accent-soft);
+  border-color: var(--accent-ink);
+  color: var(--accent-hover);
+}
+html:not([data-theme='contrast']) .st-trade .st-tf-btn:hover { border-color: var(--accent); color: var(--accent); }
+html:not([data-theme='contrast']) .st-trade .st-ranges .st-btn.primary {
+  background: var(--accent-soft); border-color: var(--accent-ink); color: var(--accent-hover);
+}
+
+/* ---------- 图表容器 ----------
+   ★ 旧页有**两种**圆角，不要一律用 --radius：
+     `.panel`（卡片）是 14px，而 `.chart-wrap`（画布框）与 `.indicator-rail` 是 **10px**。
+     这一条原来写的是 `var(--radius)` —— 在本层改成 14 之后就跟着变成 14，
+     量出来的差异是「图表画布 radius 14px vs 10px」。
+   高度同理：旧页 `.chart-wrap{height:400px}` 是**写死**的，新壳是 320px。 */
+html:not([data-theme='contrast']) .st-trade .st-chart {
+  border-color: var(--line);
+  border-radius: 10px;
+  height: 400px;
+}
+html:not([data-theme='contrast']) .st-trade .st-cross-x,
+html:not([data-theme='contrast']) .st-trade .st-cross-y { background: var(--accent-ink); }
+
+/* ---------- 涨跌：**不动** ----------
+   这一段是写给人看的：上面所有规则都不许碰 --pos / --neg。
+   蜡烛、指标线、浮动盈亏、持仓方向全读它们，而 chartPlot 里还有一份
+   同样数值的 UP_RGB / DOWN_RGB —— 改一处不改另一处，就会出现
+   「蜡烛是 A 绿、旁边数字是 B 绿」。所以这里只声明，不做任何覆盖。 */
+
+/* ============================================================================
+ * 新手引导的界面（老师的话 / 进度条 / 结算点评 / 聚光标记）
+ * ============================================================================
+ * 这一块**不在 .st-trade 里面** —— 它是浮在整张交易页上面的一层
+ * （装配在 modes/classic/tutorial.js，DOM 由 ui/components/tutorialGuide.js 造）。
+ * 所以这里的规则一律以 .tut- 开头、不套 .st-trade 那个前缀。
+ *
+ * 两条纪律：
+ *   · 只读 base.css 的 token（--card / --line / --ink / --accent…），
+ *     高对比主题与字号缩放自动跟着走；这里不写死任何色值。
+ *   · 层本身 pointer-events: none —— 它盖在图表与下单表单上面，
+ *     要是整层可点，玩家就再也点不到下面的按钮了；只有那几个子块自己收事件。
+ * ========================================================================== */
+.tut-layer {
+  position: fixed;
+  /* ★ 四条边**分开写**，不用 `inset: 0` 简写 —— 实测这一档浏览器不认简写，
+     简写被丢掉之后这个浮层退化成「贴着静态位置、宽度按内容收缩」：
+     实测只有 741×488（视口是 1440×1000），老师条 left 算出来是 -8（半个条子跑出屏幕外），
+     聚光标记落到 2400px 之下。分开写就没有这个歧义。 */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  pointer-events: none;
+  font-size: .95em;
+}
+.tut-layer.hidden { display: none; }
+
+/* ---------- 老师的话：固定在底部中间的一条 ---------- */
+.tut-teacher {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  width: min(760px, calc(100% - 32px));
+  pointer-events: auto;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius);
+  box-shadow: 0 10px 30px rgba(17, 24, 39, .18);
+  padding: 12px 14px;
+}
+.tut-teacher-head { display: flex; align-items: baseline; gap: 10px; }
+.tut-kicker {
+  font-size: .74em;
+  letter-spacing: .04em;
+  color: var(--accent-ink);
+  text-transform: none;
+}
+.tut-line { margin: 6px 0 0; color: var(--ink); line-height: 1.6; }
+.tut-tip { margin: 4px 0 0; color: var(--ink-soft); font-size: .86em; }
+.tut-teacher-actions { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+.tut-next {
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  border-radius: var(--radius);
+  padding: 6px 16px;
+  cursor: pointer;
+  font: inherit;
+}
+.tut-next:hover { filter: brightness(1.08); }
+.tut-mini {
+  margin-left: auto;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink-soft);
+  border-radius: var(--radius);
+  padding: 4px 10px;
+  cursor: pointer;
+  font: inherit;
+  font-size: .82em;
+}
+.tut-mini:hover { color: var(--accent); border-color: var(--accent); }
+
+/* ---------- 进度条：一条细进度 + 几格读数 ---------- */
+.tut-progress {
+  position: absolute;
+  left: 50%;
+  top: 62px;
+  transform: translateX(-50%);
+  width: min(760px, calc(100% - 32px));
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+}
+.tut-bar { height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; }
+.tut-bar > i { display: block; height: 100%; background: var(--accent); transition: width .25s ease; }
+.tut-cells { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 8px; }
+.tut-cell { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+.tut-cell small { color: var(--ink-faint); font-size: .76em; }
+.tut-cell strong { color: var(--ink); font-size: .88em; }
+
+/* ---------- 结算点评：横着飘一下 ---------- */
+.tut-flash {
+  position: absolute;
+  left: 50%;
+  top: 128px;
+  transform: translateX(-50%);
+  width: min(760px, calc(100% - 32px));
+  background: var(--card);
+  border: 1px solid var(--accent-ink);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+  color: var(--ink);
+  box-shadow: 0 6px 18px rgba(17, 24, 39, .14);
+}
+.tut-flash.neg { border-color: var(--neg); }
+.tut-flash.hidden { display: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .tut-flash.tut-flash-in { animation: tut-flash-in .28s ease-out; }
+}
+@keyframes tut-flash-in {
+  from { opacity: 0; transform: translate(-50%, -8px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+/* 减弱动效（壳里的无障碍开关）时不许再动 */
+html[data-motion='off'] .tut-flash.tut-flash-in { animation: none; }
+
+/* ---------- 底部那一行「现在该做什么」（每一课都有）----------
+   内容由 core/tutorial/openTrade.js 的 hint 给：前四课是目标 / 持有中旁白 / 亏单提示，
+   第五 / 六课是挂单那几句与杠杆那一句；空串时才 hidden（课表走完 / 按过 ⏏）。
+   它**不是按钮条**：pointer-events: none —— 底下那颗「推进一步」照样点得到，
+   一挡就会变成「每次都要先划走它」。
+   配色只用 base.css 的 token，与横幅同一套（--card / --line / --accent / --ink-soft）。 */
+.tut-hint {
+  position: absolute;
+  left: 50%;
+  /* 悬浮控制条在右下角（手机上是贴底整条）：说明行抬到它上面，
+     否则最后一句会被「前进 / 自动播放」压住。 */
+  bottom: 84px;
+  transform: translateX(-50%);
+  width: min(720px, calc(100% - 32px));
+  pointer-events: none;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+  color: var(--ink-soft);
+  line-height: 1.55;
+  box-shadow: 0 6px 18px rgba(17, 24, 39, .12);
+}
+.tut-hint.hidden { display: none; }
+
+/* ---------- 聚光标记：围着「该点的那颗按钮」画一圈 ----------
+   它是**提示**，不是遮罩：整圈只有边框，下面那颗按钮照样点得到
+   （旧实现也是这个口径 —— 挡住操作就成了另一回事）。 */
+.tut-spot {
+  position: fixed;
+  z-index: 41;
+  pointer-events: none;
+  /* ★ box-sizing 必须是 border-box：这一圈的 left/top/width/height 是**算出来的**
+     （围着目标那颗按钮的 rect 各放 6px），content-box 会让那 2px 边框再加到外面去，
+     框就比按钮大一圈、看着像没对准（实测宽高各多 4px —— 正是两条边框）。 */
+  box-sizing: border-box;
+  border: 2px solid var(--accent);
+  border-radius: calc(var(--radius) + 4px);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, .16);
+  transition: left .18s ease, top .18s ease, width .18s ease, height .18s ease;
+}
+/* ★ 滚动时**必须**把过渡关掉 —— 这一条是现场量出来的：
+   圈的位置是按目标的 `getBoundingClientRect()` 算的（视口坐标），所以页面一滚它就得重算。
+   而那个 .18s 过渡是给「引导换了个目标」用的：换目标时看着舒服，
+   滚动时却变成「页面已经滚过去了、蓝框还在半路上滑」——
+   手一搓滚轮，框与按钮就错开一百多像素，看着就是「蓝框不跟着滚」。
+   实测（scrollY 407 → 544，同一拍里量）：页面即时到位，圈还停在原处、靠过渡慢慢追。
+   所以滚动时加这一档：位置一变就瞬时落位，过渡留给「不再滚」之后的下一次换靶。 */
+.tut-spot.instant { transition: none; }
+.tut-spot.hidden { display: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .tut-spot { animation: tut-breathe 1.8s ease-in-out infinite; }
+}
+@keyframes tut-breathe {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(79, 70, 229, .16); }
+  50% { box-shadow: 0 0 0 7px rgba(79, 70, 229, .06); }
+}
+html[data-motion='off'] .tut-spot { animation: none; }
+
+/* ---------- 顶栏那颗 ⏏（唯一的出口）---------- */
+.tut-exit { font-size: 15px; line-height: 1; }
+.tut-exit.hidden { display: none; }
+
+/* ---------- 设置面板里的那一块 ---------- */
+.tut-settings { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 10px; }
+.tut-settings .row { gap: 8px; margin-top: 8px; }
+
+/* ---------- 窄屏：老师条贴着底、进度条让开顶栏 ---------- */
+@media (max-width: 720px) {
+  .tut-progress { top: 56px; }
+  .tut-teacher { bottom: 10px; padding: 10px; }
+  .tut-flash { top: 150px; }
+  .tut-hint { bottom: calc(84px + env(safe-area-inset-bottom)); padding: 7px 10px; }
+}
+
+/* ---------- 手机上的账户条（2026-10-19）----------
+   tutorial.css 里那几条 `html:not([data-theme='contrast']) .st-trade .st-account`
+   权重比 trade.css 的窄屏规则高，390px 下仍按两列排（金额被折成「$10,00 / 0.00」）。
+   这里用同样的权重把窄屏改回单列；手机（≤720）再由 trade.css 压成
+   「权益一行 + 指标一条横向滚动」的一屏条。 */
+@media (max-width: 860px) {
+  html:not([data-theme='contrast']) .st-trade .st-account {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0; padding: 8px 10px; gap: 6px;
+  }
+  html:not([data-theme='contrast']) .st-trade .st-account::after {
+    font-size: 84px; right: 10px; top: -18px; opacity: .8;
+  }
+  html:not([data-theme='contrast']) .st-trade .st-account-equity { font-size: 1.25rem; }
+}
+@media (max-width: 640px) {
+  html:not([data-theme='contrast']) .st-trade .st-metric {
+    border-left: 0; padding-left: 0; min-height: 0;
+  }
+  html:not([data-theme='contrast']) .st-trade .st-metrics { gap: 8px 12px; }
+  html:not([data-theme='contrast']) .st-trade .st-account::after { display: none; }
+}
+
+/* ---------- 图表高度：压过上面那条 `html:not(...) .st-trade .st-chart{height:400px}` ----------
+   那一条的权重是 (0,3,1)，trade.css 里的 `.st-trade.compact .st-chart` 只有 (0,3,0) ——
+   所以紧凑模式的 300px 与小屏的 clamp 全都没生效（实测桌面仍是 400、手机 402）。
+   这里补同权重的两条：桌面紧凑 300；手机上按视口高度自适应，小屏不再让一张图占掉整屏。 */
+html:not([data-theme='contrast']) .st-trade.compact .st-chart { height: 300px; }
+@media (max-width: 720px) {
+  html:not([data-theme='contrast']) .st-trade.compact .st-chart {
+    height: 160px;
+    height: clamp(140px, 19dvh, 190px);
+  }
+}
+
+/* ---------- 开了 2 / 3 个副图时再让一档（2026-10-19）----------
+   一个副图 64px 时「主图 + 下单」是 642px；三个副图会多出 128px，
+   三块就掉出一屏了（用户报的就是这个）。这里按副图数量逐档收主图高度：
+     2 格 → 主图 128、副图 52
+     3 格 → 主图 96、副图 45、间距 4
+   （2026-10-19 晚些时候又加了「仓位比例」滑块，所以比第一版再收一档。）
+   权重必须压过上面那条 (0,4,1)，所以带上 `html:not(...)` 与 `.compact`。 */
+@media (max-width: 720px) {
+  html:not([data-theme='contrast']) .st-trade.compact
+    .st-chart-panel:has(.st-subchart:nth-child(2):not(.hidden)) .st-chart { height: 128px; }
+  html:not([data-theme='contrast']) .st-trade.compact
+    .st-chart-panel:has(.st-subchart:nth-child(2):not(.hidden)) .st-subchart { height: 52px; }
+  html:not([data-theme='contrast']) .st-trade.compact
+    .st-chart-panel:has(.st-subchart:nth-child(3):not(.hidden)) .st-chart { height: 96px; }
+  html:not([data-theme='contrast']) .st-trade.compact
+    .st-chart-panel:has(.st-subchart:nth-child(3):not(.hidden)) .st-subchart { height: 45px; }
+  html:not([data-theme='contrast']) .st-trade.compact
+    .st-chart-panel:has(.st-subchart:nth-child(3):not(.hidden)) .st-subcharts { gap: 4px; }
+}

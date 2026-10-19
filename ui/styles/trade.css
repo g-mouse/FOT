@@ -1,0 +1,920 @@
+/* ============ trade.css（交易页样式） ============
+   ★ coin 版：这个文件原名 story.css，因为里面两段样式一直住在一起。
+     故事模式移除之后，第 1 段（.st-* 交易页）是模拟模式唯一的界面，必须留下；
+     第 2 段（.mail-* / .char-* / .buff-* / .ending-* / .news-* / .vin-* 等）是故事模式
+     自己的页签与悬浮窗，那些组件已经随故事模式一起删掉了 —— 这几段规则现在**匹配不到
+     任何节点**，是惰性的死样式。保留它们而不是逐条删：
+     这一段与 .st-* 的选择器互相穿插（同一个 .layout/.stacked 容器上两者都挂着），
+     按前缀裁剪会把交易页的排版一起裁掉（实测：整张交易页会退化成单列叠字）。
+     将来若要把它们真正分家，正确做法是把 .st-* 与共用容器规则原样搬到单独一份文件，
+     然后用真实浏览器比对截图，而不是凭前缀猜。
+
+   这里有两段，都是壳里的样式（合并成一个文件只是为了少一次请求）：
+     1) .st-*  —— **交易页**（ui/components/trade*.js）。
+        模拟模式与故事模式共用同一张交易页，所以这一段改动一律两边同时生效；
+        里面不许出现任何只对某一个模式成立的假设。
+     2) .mail-* / .char-* / .buff-* …  —— 故事模式自己的页签与悬浮窗（coin 版里已无读者）。
+
+   配色一律走 design token（见 ui/styles/base.css：--card/--line/--ink/--accent/
+   --pos/--neg/--mixed/--fs-*/--sp-*/--radius*），
+   所以高对比主题 html[data-theme="contrast"] 会自动跟着变，不需要在这里再写一套。
+   ★ 不要再往这份文件里加颜色字面量：色板只该有一个来源。
+   设计口径：数字一律等宽、正负一律带符号、明细一律可展开。
+   ================================================================= */
+
+
+/* ============================================================
+   以下是**故事模式**自己的样式（人物卡 / 邮箱 / buff / 时间线 / 悬浮窗）。
+   交易页那一大段 .st-* 在下面，两个模式共用，改它要两边一起想。
+   ============================================================ */
+
+/* ---------- 人物卡 ---------- */
+.char-head { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.char-name strong { font-size: 1.08rem; margin-right: 6px; }
+.char-tags { display: flex; flex-wrap: wrap; align-content: flex-start; }
+
+/* ---------- 执念 ---------- */
+.obsession-line { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.obsession-stage { color: var(--accent); font-weight: 700; }
+.obsession-line strong { font-size: 1rem; }
+
+/* ---------- 邮件 ---------- */
+.mail-layout { display: grid; grid-template-columns: minmax(240px, 320px) 1fr; gap: 14px; align-items: start; }
+.mail-side { position: sticky; top: 64px; }
+.mail-list { margin-top: 8px; max-height: 66vh; overflow: auto; display: flex; flex-direction: column; gap: 6px; }
+.mail-item {
+  text-align: left; border: 1px solid var(--line); background: var(--card); border-radius: 10px;
+  padding: 9px 11px; cursor: pointer; font: inherit; display: block; width: 100%;
+}
+.mail-item:hover { border-color: var(--accent); }
+.mail-item.unread { border-left: 4px solid var(--accent); }
+.mail-item.active { background: var(--accent-soft); border-color: var(--accent); }
+/* 邮件标题/发件人里会出现地址、种子、长机构名这类没有空格的串。
+   overflow-wrap:normal 只在空格处断行，于是收件箱会自己长出横向滚动条
+   （实测 360px + 字号 160% 下 .mail-item 溢出 181px）。 */
+.mail-item-top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; }
+.mail-item-top > strong { min-width: 0; }
+.mail-from { font-size: .9rem; }
+.mail-subject { font-size: .9rem; margin: 3px 0; overflow-wrap: anywhere; }
+.mail-item-foot { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+
+.mail-thread { display: flex; flex-direction: column; gap: 12px; }
+.mail-bubble { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; background: var(--card); }
+.mail-bubble.reply { background: var(--accent-soft); border-color: var(--accent); }
+.mail-bubble.reaction { background: var(--bg-soft); }
+.mail-bubble.persona-cold_professional { border-left: 4px solid var(--ink-soft); }
+.mail-bubble.persona-blunt { border-left: 4px solid var(--mixed); }
+.mail-bubble.persona-warm { border-left: 4px solid var(--pos); }
+.mail-bubble.persona-quiet { border-left: 4px solid var(--line); }
+.mail-bubble-head { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+.mail-bubble-subject { font-weight: 700; margin-bottom: 6px; }
+.mail-bubble-body p { margin: 0 0 8px; line-height: 1.7; }
+
+/* 内心独白：与对话正文明确区分（斜体 + 缩进 + 左侧色条 + 底色）—— 叙事硬要求 */
+.monologue {
+  margin: 0; padding: 10px 14px 10px 18px; border-left: 3px solid var(--accent);
+  background: var(--accent-soft); border-radius: 0 10px 10px 0;
+  font-style: italic; color: var(--ink-soft); line-height: 1.75;
+}
+.monologue p { margin: 0 0 6px; }
+.monologue p:last-child { margin-bottom: 0; }
+
+/* ---------- 选项 ---------- */
+.choice-list { display: flex; flex-direction: column; gap: 7px; margin-top: 10px; }
+.choice-item {
+  display: flex; gap: 10px; align-items: flex-start; text-align: left; width: 100%;
+  border: 1px solid var(--line); background: var(--card); border-radius: 10px;
+  padding: 9px 12px; cursor: pointer; font: inherit;
+}
+.choice-item:hover, .choice-item:focus { border-color: var(--accent); background: var(--accent-soft); outline: none; }
+.choice-key {
+  flex: 0 0 18px; text-align: center; border: 1px solid var(--line);
+  border-radius: 5px; line-height: 17px; height: 18px; color: var(--ink-soft);
+}
+.choice-text { display: flex; flex-direction: column; gap: 2px; }
+/* 代价必须在点之前就看得见（附录 B 第 2 条） */
+.choice-cost { color: var(--mixed); }
+.choice-blocked { margin-top: 6px; line-height: 1.7; }
+
+/* ---------- buff ---------- */
+.buff-card { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; background: var(--card); }
+.buff-card.neg { border-left: 4px solid var(--neg); }
+.buff-card.pos { border-left: 4px solid var(--pos); }
+.buff-card.mixed { border-left: 4px solid var(--mixed); }
+.buff-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.buff-mark { font-size: .9rem; }
+.buff-mark.neg { color: var(--neg); }
+.buff-mark.pos { color: var(--pos); }
+.buff-mark.mixed { color: var(--mixed); }
+/* buff 词条体的两段：风味段 + 数值行（见 docs/BUFF_COPY.md）。
+   数值行单独成块并左缩进，玩家扫一眼就能对上结算面板的账；
+   pre-line 是兜底：万一某条 desc 只有一整段没有换行，也不会把 \n 吃掉。 */
+.buff-desc { margin: 4px 0 6px; line-height: 1.6; white-space: pre-line; }
+.buff-desc .buff-flavor { margin-bottom: 5px; }
+.buff-desc .buff-stat {
+  white-space: normal; background: var(--bg-soft); border-radius: 6px;
+  padding: 4px 8px; margin-top: 3px; line-height: 1.7;
+  font-variant-numeric: tabular-nums;
+}
+.buff-meta div { line-height: 1.7; }
+.buff-contrib { margin-top: 4px; }
+.buff-summary { margin-bottom: 12px; }
+
+/* ---------- 债务 / 评分 ---------- */
+.debt-row { margin-bottom: 10px; }
+.score-formula { display: flex; gap: 6px; align-items: baseline; font-size: 1rem; margin-bottom: 6px; flex-wrap: wrap; }
+.score-band { font-weight: 700; margin: 4px 0 2px; }
+.score-notes div { line-height: 1.7; }
+
+/* ---------- 时间线 / 追溯 ---------- */
+.timeline-log { max-height: 320px; overflow: auto; }
+.timeline-log .row { padding: 2px 0; border-bottom: 1px dashed var(--line); }
+.trace-rows details { border-bottom: 1px solid var(--line); padding: 5px 0; }
+.trace-rows summary { cursor: pointer; font-size: .88rem; }
+.trace-detail { padding: 6px 0 2px 10px; }
+/* table-layout:fixed 才能真正把列宽钉住；overflow-wrap 让格子里的
+   种子/哈希/路径/错误堆栈能断行。两个都要：只有 fixed 的话内容照样溢出格子，
+   只有 anywhere 的话 auto 布局仍会按「最长不可断 token」把整张表撑宽
+   （实测一格放 4 个指纹就把 360px 的文档撑到 841px）。 */
+.ui-table { width: 100%; border-collapse: collapse; font-size: .84rem; table-layout: fixed; }
+.ui-table th, .ui-table td { text-align: left; padding: 5px 7px; border-bottom: 1px solid var(--line); vertical-align: top; overflow-wrap: anywhere; }
+.ui-table th { color: var(--ink-soft); font-weight: 600; }
+/* 「状态还没就绪」的占位（storyPanels.pending）：类名一直在用但从来没有样式，
+   于是开局那一瞬间玩家看到的是一行没有任何排版的裸文字。 */
+.cs-panel-pending {
+  padding: 28px 18px; text-align: center; color: var(--ink-soft);
+  background: var(--card); border: 1px dashed var(--line); border-radius: var(--radius);
+}
+/* .mail-main 是收件箱布局的右列：没有 min-width:0 的话，
+   里面的长标题会把整个网格列顶宽（与 .mail-item-top 的换行修复配套）。 */
+.mail-main { min-width: 0; }
+
+/* ---------- 交易悬浮窗里的内容（外壳是 .cs-float，见 shell.css） ----------
+   里面装的是与页签下方同一批 .st-panel 零件，所以这里要把它们「摊平」：
+   窗口本身已经是卡片，再套一层卡片就是双层边框 + 双层内边距，
+   380px 的宽度经不起这个。 */
+.st-float-body { padding: 8px 10px; }
+.st-float-body .st-panel {
+  background: transparent; border: 0; box-shadow: none; padding: 0;
+}
+.st-float-body .st-panel h3 { font-size: .84rem; }
+.st-float-body .st-cell { min-width: 58px; }
+.st-float-body .st-cell small { font-size: .62rem; }
+.st-float-body .st-cell strong { font-size: .78rem; }
+.st-float-body .st-row { padding: 6px 8px; }
+.st-float-body .st-head-tools { gap: 6px; }
+
+/* ---------- 邮件悬浮窗里的内容（外壳是 .cs-float，见 shell.css） ----------
+   窗口只有 400px 宽，所以这里只放「列表 / 一封信」两屏，用返回键切换，
+   不做页签那种左右分栏 —— 那在这么窄的地方会把正文挤成一条。 */
+.mailfloat-body { display: flex; flex-direction: column; gap: 8px; }
+.mailfloat-filters { display: flex; gap: 4px; flex-wrap: wrap; }
+.mailfloat-filters .btn { padding: 3px 9px; font-size: .76rem; }
+.mailfloat-search { width: 100%; box-sizing: border-box; }
+.mailfloat-list { display: flex; flex-direction: column; gap: 6px; max-height: 44vh; overflow: auto; }
+.mailfloat-thread-head { display: flex; align-items: center; gap: 8px; }
+.mailfloat-thread-head .btn { padding: 3px 9px; font-size: .76rem; }
+.mailfloat-foot {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  border-top: 1px solid var(--line); padding-top: 8px; margin-top: 4px;
+}
+.mailfloat-foot .btn { padding: 3px 9px; font-size: .76rem; }
+/* 页签那一排里的「用悬浮窗打开」按钮：它是入口之一，视觉上不要抢主按钮 */
+.mail-tab-tools { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+/* IM 气泡内的正文：气泡本身有 max-width:86%，正文没有 overflow-wrap 就会画到气泡外面 */
+.vw-chat-text { overflow-wrap: anywhere; }
+/* 未识别的控件类型：以前渲染成一个没有任何样式的空 div —— 内容作者把
+   type 写错（tabel）时整块控件静默消失，谁都看不出来。给一个可见的兜底。 */
+.vw-unknown {
+  padding: 6px 9px; border: 1px dashed var(--mixed); border-radius: 8px;
+  color: var(--mixed); font-size: .8rem;
+}
+.details-body { padding: 6px 0 4px 10px; }
+details summary { cursor: pointer; }
+
+/* ---------- 新闻滴灌 ---------- */
+.news-ticker { margin-bottom: 12px; }
+.news-list { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+.news-item { border: 1px solid var(--line); border-radius: 9px; padding: 8px 10px; cursor: pointer; background: var(--bg-soft); }
+.news-item:hover { border-color: var(--accent); }
+.news-item-top { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.news-publisher { font-weight: 700; }
+.news-title { margin: 3px 0; line-height: 1.5; }
+.news-item.falsified { border-left: 4px solid var(--neg); }
+.news-item.held { border-left: 4px solid var(--pos); }
+.news-impacts span { display: inline-block; margin-right: 10px; }
+.ma-bar { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+
+/* ---------- 结局卡 ---------- */
+.ending-card.tier-great { border-top: 5px solid var(--pos); }
+.ending-card.tier-good { border-top: 5px solid var(--accent); }
+.ending-card.tier-neutral { border-top: 5px solid var(--line); }
+.ending-card.tier-bad { border-top: 5px solid var(--mixed); }
+.ending-card.tier-doom { border-top: 5px solid var(--neg); }
+.ending-card.tier-secret { border-top: 5px solid #7a5cc4; }
+.ending-tier { letter-spacing: .18em; color: var(--ink-soft); }
+.ending-title { margin: 4px 0 10px; }
+.ending-epilogue p { line-height: 1.8; }
+.ending-seed { margin-top: 8px; }
+.gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; margin-top: 8px; }
+.gallery-item {
+  border: 1px solid var(--line); border-radius: 9px; padding: 8px 10px; cursor: pointer;
+  display: flex; flex-direction: column; gap: 2px; font-size: .86rem; background: var(--bg-soft);
+}
+.gallery-item.locked { color: var(--ink-soft); opacity: .7; }
+.gallery-item.tier-secret.got { border-color: #7a5cc4; }
+
+/* ============================================================
+   故事模式 · 交易页（.st-*）
+   口径：与模拟模式（game/）那张界面**逐项对齐** —— 账户总览条 / 交易对行情 /
+   K 线图 / 当前持仓 / 当前挂单 / 结算记录 / 下单 / 周转借款，
+   但配色与排版一律走 shell.css 的变量，所以高对比主题与字号缩放自动成立。
+   窄屏（≤1080px / ≤720px）纵向堆叠，不让任何一栏横着挤出去。
+   ============================================================ */
+.st-trade { display: flex; flex-direction: column; gap: 12px; padding-bottom: 76px; }
+/* 右下角悬浮控制条：前进 / 自动播放（2026-10-19 用户口径：改成悬浮窗，方便继续）。
+   固定定位 + 毛玻璃底，不随页面滚走；下面 .st-trade 留 76px，最后一屏不被它盖住。 */
+.st-dock {
+  position: fixed; right: 18px; bottom: max(18px, env(safe-area-inset-bottom));
+  z-index: 60; display: flex; align-items: center; gap: 8px;
+  padding: 8px; border: 1px solid var(--line); border-radius: 14px;
+  background: color-mix(in srgb, var(--card) 92%, transparent);
+  box-shadow: var(--shadow-pop); backdrop-filter: blur(8px);
+}
+.st-dock .st-tool { padding: 8px 14px; }
+.st-dock .st-step { min-width: 96px; }
+@media (prefers-reduced-motion: no-preference) {
+  .st-dock { transition: box-shadow .2s ease; }
+}
+.st-dock:hover { box-shadow: 0 14px 32px rgba(17, 24, 39, .16); }
+/* 通知不要压在悬浮控制条上：抬到它上面。控制条是常驻的，toast 是临时的，
+   两者抢同一块右下角时，让 toast 让路。 */
+.toast-root { bottom: calc(88px + env(safe-area-inset-bottom)); }
+@media (max-width: 720px) {
+  /* 只把 toast 往左收一点，不铺满整条屏（铺满会把图整个盖住） */
+  .toast-root { right: 10px; }
+}
+
+/* ---------- 工具栏 ---------- */
+.st-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap;
+}
+.st-toolbar-lead { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.st-toolbar-lead strong { font-size: 1.02rem; }
+.st-toolbar-tools { display: flex; gap: 6px; margin-left: auto; }
+.st-tool {
+  border: 1px solid var(--line); background: var(--card); color: var(--ink-soft);
+  border-radius: 9px; padding: 5px 11px; font: inherit; font-size: .82rem; cursor: pointer;
+}
+.st-tool:hover { border-color: var(--accent); color: var(--accent); }
+.st-tool[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+/* 「前进 →」：工具栏里唯一的主按钮（2026-10-19）。按一次 = 一根 K 线；
+   播放动画期间置灰，免得连点把两根叠在一起。 */
+.st-step {
+  background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700;
+  padding: 6px 14px; box-shadow: 0 1px 0 rgba(17, 24, 39, .06);
+}
+.st-step:hover { color: #fff; filter: brightness(1.06); border-color: var(--accent); }
+.st-step:disabled { opacity: .45; cursor: not-allowed; filter: none; }
+/* 键位提示：与模拟模式图表页脚那一行同一个意思（空格 前进 · ↑ / ↓ 换交易对 · A 自动播放）。
+   窄屏藏起来 —— 那一行挤不下，而手机上本来也没有键盘。 */
+.st-keyhints { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 62ch; align-self: center; }
+@media (max-width: 720px) { .st-keyhints { display: none; } }
+
+/* ---------- 通用小件 ---------- */
+.st-kicker {
+  display: block; font-size: .62rem; letter-spacing: .16em; text-transform: uppercase;
+  color: var(--ink-soft); font-weight: 700;
+}
+.st-quiet { color: var(--ink-soft); font-size: .78rem; }
+/* ★ pointer-events:none —— 一行说明文字不该吃点击（2026-10-04 命中测试全扫抓到的）：
+   行情列表最后一行（实测 AVAX/USDT）的中心点用 elementFromPoint 命中的是这条 .st-note，
+   而不是那一行本身 —— 真人点它换不了品种，而 element.click() 的测试看不出来。
+   这类说明文字一律不吃事件：它不可点，视觉上盖住谁就让谁透过来。 */
+.st-note { margin: 4px 0 0; color: var(--ink-soft); font-size: .78rem; line-height: 1.55; pointer-events: none; }
+.st-glyph { color: var(--mixed); font-size: 1.5rem; line-height: 1; }
+.st-count {
+  display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 5px;
+  border-radius: 999px; background: var(--accent-soft); color: var(--accent);
+  font-size: .7rem; font-style: normal; font-weight: 700;
+}
+.st-panel {
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 12px 14px; box-shadow: var(--shadow);
+}
+.st-panel h3 { margin: 2px 0 8px; font-size: .96rem; display: flex; align-items: center; gap: 6px; }
+.st-panel-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.st-panel-head.row { flex-wrap: wrap; }
+.st-head-tools { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+/* 结算记录折叠：>10 条才出现 */
+.st-history-toggle { font-size: .7rem; padding: 2px 8px; white-space: nowrap; }
+
+/* ---------- 账户总览条 ---------- */
+.st-account {
+  background: linear-gradient(180deg, var(--accent-soft), var(--card) 70%);
+  border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 12px 16px; box-shadow: var(--shadow);
+  display: grid; gap: 10px 22px;
+  grid-template-columns: minmax(210px, 0.9fr) minmax(0, 2.6fr);
+  align-items: center;
+}
+@media (max-width: 860px) {
+  .st-account { grid-template-columns: minmax(0, 1fr); }
+}
+.st-account-lead { min-width: 220px; }
+.st-eyebrow { font-size: .7rem; letter-spacing: .1em; color: var(--ink-soft); font-weight: 700; }
+.st-account-title { display: flex; align-items: baseline; gap: 6px; color: var(--ink-soft); font-size: .86rem; }
+.st-account-equity { font-size: 1.4rem; color: var(--ink); }
+/* 布局：权益块占左边一列，六个指标占右边一整行。
+   这里刻意**不用** `flex: 1 1 100%` 让指标换行 —— 那样 .st-account 的总宽会缩到
+   只剩权益块那么宽（截图上就是整条只有 60% 宽、指标挤成两列的怪样子）。
+   用外层 auto-fit 网格的好处：宽的时候一行排满，窄的时候指标自己折行，总量始终占满。 */
+.st-metrics {
+  display: grid; grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px 14px; min-width: 0;
+}
+/* 装不下 6 列时按 3 / 2 列折行，而不是让最后一格孤零零占满一整行 */
+@media (max-width: 1180px) { .st-metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .st-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+/* min-width:0 是必须的：.st-metric 是网格项，默认 min-width:auto 会让它
+   拒绝收缩到内容的 min-content 以下，于是「Rp34,000,000」「E£213,097,081.99」
+   这种 13–14 个字符的金额在默认字号下就已经溢出格子（实测 ov=4px，
+   字号 160% 时 43px）。overflow-wrap 保证极端长的数字也能断行。 */
+.st-metric { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.st-metric > span { color: var(--ink-soft); font-size: .72rem; }
+.st-metric > strong { font-size: .92rem; overflow-wrap: anywhere; }
+
+/* ---------- 三栏工作区 ---------- */
+.st-workspace { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }
+.st-col { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+@media (min-width: 1080px) {
+  /* 2026-10-19：用户要「行情面板大一点、一屏放下所有交易对」——
+     左栏加宽、列表不再限高；指标栏同时收窄（用户口径「指标更紧凑」），
+     中间图那一栏拿回宽度。 */
+  .st-workspace { grid-template-columns: minmax(208px, 244px) minmax(360px, 1fr) minmax(268px, 320px); align-items: start; }
+  .st-trade.compact .st-pair-list { max-height: none; }
+  .st-trade.compact .st-market .st-pair-list { max-height: none; }
+  .st-pair-row { padding: 3px 6px; }
+}
+.st-col-left { order: 2; }
+.st-col-center { order: 1; }
+.st-col-right { order: 3; }
+@media (min-width: 1080px) {
+  .st-col-left { order: 1; }
+  .st-col-center { order: 2; }
+  .st-col-right { order: 3; }
+}
+
+/* ---------- 交易对行情 ---------- */
+.st-pair-list { display: flex; flex-direction: column; gap: 3px; max-height: 52vh; overflow: auto; }
+.st-pair-row {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 1px 6px; align-items: center;
+  width: 100%; text-align: left; font: inherit; cursor: pointer;
+  border: 1px solid var(--line); background: var(--card); border-radius: 8px; padding: 4px 7px;
+}
+.st-pair-row:hover { border-color: var(--accent); }
+.st-pair-row.active { border-color: var(--accent); background: var(--accent-soft); }
+/* 交易对名与价格都要允许断行：否则「BTCUSDT292.39」会挤在一起并溢出 27–59px */
+.st-pair-name { display: flex; align-items: baseline; gap: 4px; min-width: 0; }
+.st-pair-name strong { display: inline; font-size: .8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.st-pair-name small { display: none; }
+.st-pair-price { display: flex; align-items: baseline; justify-content: flex-end; gap: 5px; min-width: 0; text-align: right; }
+.st-pair-price strong { display: inline; font-size: .8rem; white-space: nowrap; }
+.st-pair-price small { display: inline; font-size: .66rem; white-space: nowrap; }
+.st-pair-tags { grid-column: 1 / -1; display: flex; gap: 4px; flex-wrap: wrap; }
+/* 空标签位不占一行（否则整张表的每行都会多出几像素） */
+.st-pair-tags:empty { display: none; }
+.st-dir {
+  font-style: normal; font-size: .66rem; font-weight: 700; border-radius: 5px; padding: 1px 5px;
+  background: var(--bg-soft); color: var(--ink-soft);
+}
+.st-dir.long { background: var(--pos-soft); color: var(--pos); }
+.st-dir.short { background: var(--neg-soft); color: var(--neg); }
+/* 行情列表上的小标记：现在只有一种用途 ——「过滤中」（那一段还不可交易）。
+   「停牌」那一档已随停牌整块删掉，所以这个类名不再兼任两种意思。 */
+.st-halt { font-style: normal; font-size: .66rem; color: var(--mixed); background: var(--mixed-soft); border-radius: 5px; padding: 1px 5px; }
+
+/* ---------- K 线图 ---------- */
+.st-chart-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.st-chart-top h3 { margin: 2px 0 0; font-size: 1.04rem; }
+.st-pair-sub { color: var(--ink-soft); font-size: .76rem; }
+.st-quote-block { text-align: right; }
+.st-quote { display: block; font-size: 1.3rem; }
+.st-change { display: block; font-size: .8rem; }
+.st-chart-controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 8px 0; }
+.st-select { display: flex; align-items: center; gap: 6px; font-size: .78rem; color: var(--ink-soft); }
+.st-select select { min-width: 148px; }
+.st-ranges { display: flex; gap: 4px; }
+.st-ranges .btn { padding: 3px 9px; font-size: .78rem; }
+.st-chart-meta { display: flex; gap: 12px; flex-wrap: wrap; margin-left: auto; font-size: .74rem; }
+.st-clock { color: var(--ink-soft); }
+/* 周期选择器：一排小按钮（4H / 8H / 12H / 1D / 3D / 1W）。
+   选中的那个用 primary —— 与「一屏根数」那一排同一套观感，
+   玩家一眼就知道这两排是同一类开关（都只影响看图）。 */
+.st-tf { display: inline-flex; gap: 2px; align-items: center; }
+.st-tf-btn {
+  font: inherit; font-size: .66rem; font-weight: 700; letter-spacing: .02em;
+  padding: 3px 7px; min-width: 28px; cursor: pointer;
+  border: 1px solid var(--line); border-radius: 6px;
+  background: transparent; color: var(--ink-soft);
+}
+.st-tf-btn:hover { border-color: var(--accent); color: var(--accent); }
+.st-tf-btn.primary {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  border-color: var(--accent); color: var(--accent);
+}
+.st-chart-host { position: relative; }
+/* 图 + 指标栏并排。窄屏时指标栏掉到图下面（grid 单列），
+   因为挤在图旁边会把图压到 300px 以内，那时候图已经没法看了。
+   指标栏给到 176–208px：再窄的话「第 1 条 ☐ 周期 [ 5 ]」这一行放不下，
+   「周期」两个字会被裁成一个字（第一版 148px 就是这样）。 */
+.st-chart-row { display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr); min-width: 0; }
+@media (min-width: 900px) {
+  .st-chart-row { grid-template-columns: minmax(0, 1fr) minmax(150px, 172px); align-items: stretch; }
+}
+/* 大屏上的指标栏再紧一档（2026-10-19 用户口径）：行距、字号、头/组间距都收小，
+   宽度也从 176–208 收到 150–172（见 .st-chart-row）。 */
+@media (min-width: 1080px) {
+  .st-ind-head { padding: 6px 8px; }
+  .st-ind-reset { font-size: .64rem; padding: 1px 5px; }
+  .st-ind-body { padding: 2px; }
+  .st-ind-row { padding: 3px 5px; }
+  .st-ind-name { font-size: .74rem; }
+  /* 大屏指标栏收窄之后中文全称只剩「简单移…」这种半截字，看着更乱；
+     直接只留英文缩写（SMA / MACD…），完整说明在「+」的参数面板与悬停 title 里。 */
+  .st-ind-cn { display: none; }
+  .st-ind-group + .st-ind-group { margin-top: 6px; }
+  .st-ind-group-head { margin-bottom: 3px; font-size: .62rem; }
+}
+.st-ind {
+  display: flex; flex-direction: column; min-width: 0;
+  border: 1px solid var(--line); border-radius: 10px; background: var(--card);
+}
+.st-ind-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 6px;
+  padding: 8px 10px; border-bottom: 1px solid var(--line);
+}
+.st-ind-reset {
+  font: inherit; font-size: .7rem; padding: 2px 7px; cursor: pointer;
+  border: 1px solid var(--line); border-radius: 6px; background: transparent; color: var(--ink-soft);
+}
+.st-ind-reset:hover { border-color: var(--accent); color: var(--accent); }
+/* 手机上才显示（见媒体查询）：默认露一行指标胶囊，点它才展开完整参数面板 */
+.st-ind-toggle { display: none; }
+.st-ind-body { display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; padding: 4px; }
+/* ---------- 指标栏的两组：主图叠加 / 副图 ----------
+   与旧教程页同一套分组与计数胶囊（那一版是 `.rail-group-head` / `.rail-group-head i`）：
+   组标题是小字距大写的等宽小字，右边一颗 `已开 / 上限` 的胶囊。
+   尺寸按老页面逐条换算成 rem（10px → .667rem、9.5px → .633rem，根字号 15px）；
+   颜色全部走 base 的 token —— 旧页那几个硬编码色（#8f96a3 / #eeeef8 / #5f5ba0）
+   与 --ink-faint / --accent-soft / --accent-ink 本来就是同一批值。 */
+.st-ind-group { display: flex; flex-direction: column; }
+.st-ind-group + .st-ind-group { margin-top: 10px; }
+.st-ind-group-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 6px;
+  margin: 0 0 5px; padding: 0 2px;
+  font-family: "DM Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: .667rem; font-weight: 800; letter-spacing: .1em;
+  color: var(--ink-faint); text-transform: uppercase;
+}
+.st-ind-group-head i {
+  font-style: normal; font-size: .633rem; font-weight: 800; letter-spacing: 0;
+  color: var(--accent-ink); background: var(--accent-soft);
+  border-radius: var(--radius-pill); padding: 2px 6px;
+}
+.st-ind-list { display: flex; flex-direction: column; gap: 4px; }
+.st-ind-row.on { background: color-mix(in srgb, var(--accent) 7%, transparent); }
+.st-ind-row.blocked .st-ind-main { opacity: .45; cursor: not-allowed; }
+/* 行内距从 6 收到 4、字距去掉：旧页那一行是「SMA简单移动平均线」**连排**的，
+   中间没有空格；本层字号按旧版放大到 16 之后，那 6px 的间距正好把每行挤出两个字，
+   于是出现「SUPERTREND 超级…」这种截断 —— 旧页在同宽度下是完整显示的。 */
+/* 一行指标 = **两列网格**：左边是「勾选框 + 名字 + 中文全称」（可压缩），右边是那组按钮。
+   ★ 为什么必须用 grid（而不是一行 flex 让它自己折行）：flex 折行的默认行为是
+   「放不下就整块掉到下一行、并且回到行首」—— 现场实测 165px 宽的那一栏里，
+   中文全称吃掉全部剩余宽度之后，按钮组被挤到**第二行的最左边**
+   （`tools.left === main.left`），看上去像「按钮跑到名字下面去了」，
+   而且行高翻倍、界面错位。用 `grid-template-columns: minmax(0,1fr) auto`
+   把两列的宽度关系说死：第一列随便压（中文全称出省略号），第二列按内容占位、永不折行。 */
+.st-ind-row {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center; column-gap: 4px;
+  padding: 5px; border-radius: 7px; min-width: 0; overflow: hidden;
+}
+.st-ind-main { display: flex; align-items: center; gap: 4px; cursor: pointer; min-width: 0; }
+.st-ind-name { font-size: .78rem; font-weight: 700; letter-spacing: 0; flex: none; }
+/* 中文全称：**要能被压缩**（省略号），所以它自带 min-width:0。
+   不这么写的话它会顶开行宽，把右边的按钮挤出可视区（那一栏只有 176–208px）。
+   —— 修的是现场缺陷：`.st-ind-more` 原来靠 float + 负 margin 定位，
+   实测 18×18 里有 16×18 被这一格盖住，「+」只有最右 2 像素可点。 */
+.st-ind-cn { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* 撑杆：第一列里把中文全称挤到左边、右边留白交给它吃。
+   没有它的话，中文全称会用 flex:1 一直伸到按钮边上（读起来像贴在按钮上）。 */
+.st-ind-spacer { flex: 0 1 8px; min-width: 0; }
+/* 行尾那组按钮：**不换行、不被压缩**（`flex: none`）——
+   一旦被压缩，18px 的按钮会窄到点不中。 */
+.st-ind-row-tools { display: flex; align-items: center; gap: 3px; flex: none; }
+.st-ind-kind {
+  font-size: .62rem; padding: 1px 5px; border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent);
+}
+.st-ind-more {
+  width: 18px; height: 18px; line-height: 1; font: inherit; font-size: .8rem;
+  border: 1px solid var(--line); border-radius: 5px; background: transparent;
+  color: var(--ink-soft); cursor: pointer;
+}
+.st-ind-more:hover { border-color: var(--accent); color: var(--accent); }
+/* 每行那颗小「↺ 恢复默认」：与展开键同尺寸，观感统一 */
+.st-ind-icon {
+  width: 18px; height: 18px; line-height: 1; font: inherit; font-size: .72rem;
+  border: 1px solid transparent; border-radius: 5px; background: transparent;
+  color: var(--ink-faint); cursor: pointer;
+}
+.st-ind-icon:hover { border-color: var(--accent); color: var(--accent); }
+.st-ind-params {
+  grid-column: 1 / -1;                 /* 展开区占满两列（它在 row 里，见文件头结构说明） */
+  padding: 2px 8px 8px; display: flex; flex-direction: column; gap: 5px; min-width: 0;
+}
+.st-ind-desc { margin: 0 0 2px; line-height: 1.45; }
+.st-ind-lines { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+/* 一条线那一行要能折行：指标栏只有 148–172px 宽，而「第 n 条 + 颜色 + ↺ + 周期输入框」
+   排在一行放不下。不折行就会横向溢出，被 .st-ind-row 的 overflow:hidden 裁掉 ——
+   表现是「周期」两个字只剩一个字（第一版就是这样）。 */
+.st-ind-line { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 5px; min-width: 0; }
+.st-ind-line-on { display: flex; align-items: center; gap: 3px; }
+.st-ind-check, .st-ind-line-check { margin: 0; flex: none; }
+/* 每条线右边那组「上移 / 下移 / 删掉」：挤在一起、不与参数输入框混行 */
+.st-ind-line-tools { display: flex; align-items: center; gap: 2px; flex: none; margin-left: auto; }
+.st-ind-color { width: 22px; height: 18px; padding: 0; flex: none; border: 1px solid var(--line); border-radius: 4px; background: none; cursor: pointer; }
+.st-ind-mini {
+  min-width: 18px; height: 18px; line-height: 1; font: inherit; font-size: .72rem;
+  border: 1px solid var(--line); border-radius: 5px; background: transparent;
+  color: var(--ink-soft); cursor: pointer;
+}
+.st-ind-mini:disabled { opacity: .35; cursor: not-allowed; }
+.st-ind-mini:not(:disabled):hover { border-color: var(--accent); color: var(--accent); }
+.st-ind-field { display: flex; align-items: center; gap: 3px; min-width: 0; }
+.st-ind-field-k { font-size: .62rem; color: var(--ink-soft); white-space: nowrap; }
+.st-ind-param {
+  width: 48px; flex: none; font: inherit; font-size: .7rem; padding: 1px 4px;
+  border: 1px solid var(--line); border-radius: 5px; background: var(--card); color: var(--ink);
+}
+.st-ind-param:focus { outline: none; border-color: var(--accent); }
+.st-chart {
+  position: relative; width: 100%; height: 320px;
+  border: 1px solid var(--line); border-radius: 10px; background: var(--card); overflow: hidden;
+}
+/* ⚠ 画布必须**绝对定位**，不能用 width:100%;height:100%。
+   用百分比时画布的固有尺寸（我们每帧写入的位图宽高）会参与布局，
+   于是「写位图 → 元素尺寸变 → 容器变宽 → 再写位图」成为一个每帧 +2px 的环，
+   浏览器一路报 ResizeObserver loop 警告（实测从 719px 涨到 788px 才停）。
+   绝对定位 + inset:0 之后画布对布局的贡献恒为零，写位图绝不回灌。 */
+.st-chart-canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; cursor: crosshair; }
+.st-chart-overlay { position: absolute; inset: 0; pointer-events: none; }
+.st-cross-x { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--accent); opacity: .5; }
+.st-cross-y { position: absolute; left: 0; right: 0; height: 1px; background: var(--accent); opacity: .5; }
+/* 光标读数浮层：走 token，别硬写深色。
+   原先写的是 rgba(16,35,29,.93) + #f2fff9 —— 那是**高对比主题**的底色，
+   浅色界面里突然压一块近黑浮层，视线每次移过去都要重新适应一次明暗。
+   现在用白卡片 + 一点毛玻璃感：它本来就是「浮在图上的一张小卡片」。 */
+.st-chart-tip {
+  position: absolute; pointer-events: none; z-index: 3; min-width: 152px;
+  background: var(--card);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm); padding: var(--sp-2) 10px;
+  box-shadow: var(--shadow-pop);
+  font-size: var(--fs-xs); line-height: 1.5;
+}
+.st-tip-row { display: flex; justify-content: space-between; gap: 10px; }
+.st-tip-row.head {
+  margin-bottom: 3px; padding-bottom: 3px;
+  border-bottom: 1px solid var(--line-soft);
+  font-weight: 700;
+}
+.st-tip-k { color: var(--ink-soft); }
+.st-tip-v { font-weight: 600; }
+.st-chart-empty {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  color: var(--ink-soft); font-size: .84rem; pointer-events: none;
+}
+.st-legend { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 6px; font-size: .74rem; color: var(--ink-soft); }
+.st-legend-item { display: inline-flex; align-items: center; gap: 5px; }
+.st-swatch { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+
+/* ---------- 持仓 / 挂单 / 结算记录 ---------- */
+.st-ws-tabs { display: flex; gap: 4px; margin-top: 10px; flex-wrap: wrap; }
+.st-ws-tab {
+  border: 1px solid var(--line); border-bottom: 0; background: var(--bg-soft); color: var(--ink-soft);
+  border-radius: 9px 9px 0 0; padding: 5px 11px; font: inherit; font-size: .8rem; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.st-ws-tab.active { background: var(--card); color: var(--ink); font-weight: 700; }
+.st-ws-body { border: 1px solid var(--line); border-radius: 0 10px 10px 10px; background: var(--card); padding: 10px 12px; }
+/* ★ 堆叠摆法（模拟模式，见 tradeChrome.buildWorkspace 的 o.layout='stacked'）：
+   这一层不再是一张卡片 —— 里面那三块**各自**就是卡片（持仓/挂单/结算都是 .st-panel），
+   再套一层带边框的壳就成了「卡片套卡片」（边框两条、圆角打架）。
+   所以把壳脱掉，只留纵向间距；间距取旧页 .center-column 的 14px。 */
+.st-ws-body.stacked {
+  border: 0; border-radius: 0; background: transparent; padding: 0;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.st-ws-pane.hidden { display: none; }
+.st-rows { display: flex; flex-direction: column; gap: 6px; }
+.st-row {
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; background: var(--bg-soft);
+}
+.st-cell { display: flex; flex-direction: column; gap: 1px; min-width: 76px; }
+.st-cell-wide { flex: 1 1 150px; min-width: 130px; }
+.st-cell small { color: var(--ink-soft); font-size: .68rem; }
+.st-cell strong { font-size: .84rem; }
+.st-empty { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 18px 8px; color: var(--ink-soft); font-size: .82rem; }
+.st-empty-icon { font-size: 1.3rem; color: var(--mixed); }
+
+/* ---------- 下单 ---------- */
+.st-order-pair {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  background: var(--bg-soft); border: 1px solid var(--line); border-radius: 10px;
+  padding: 7px 11px; font-size: .78rem; color: var(--ink-soft); margin-bottom: 10px;
+}
+.st-fields { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+.st-field { display: flex; flex-direction: column; gap: 4px; }
+.st-field > span, .st-field > label { font-size: .78rem; color: var(--ink-soft); }
+.st-input-shell {
+  display: flex; align-items: center; gap: 6px;
+  border: 1px solid var(--line); border-radius: 9px; padding: 3px 6px 3px 10px; background: var(--card);
+}
+.st-input-shell:focus-within { border-color: var(--accent); }
+.st-input-shell input { flex: 1 1 auto; min-width: 0; border: 0 !important; outline: 0; background: transparent; padding: 4px 0; }
+.st-input-shell .btn { flex: 0 0 auto; padding: 3px 8px; font-size: .76rem; }
+.st-prefix { color: var(--ink-soft); font-size: .78rem; }
+/* 仓位比例：放在保证金输入框下面一行 —— 拖它按可用余额自动算保证金；
+   不另起一块面板，正是为了不把手机上的「主图 + 下单」同屏挤掉。 */
+.st-pct { display: flex; align-items: center; gap: 6px; margin-top: 2px; }
+.st-pct-label { flex: 0 0 auto; font-size: .68rem; color: var(--ink-soft); white-space: nowrap; }
+.st-pct input[type='range'] { flex: 1 1 auto; min-width: 0; height: 18px; margin: 0; accent-color: var(--accent); }
+.st-pct strong { flex: 0 0 auto; min-width: 30px; text-align: right; font-size: .72rem; color: var(--accent); }
+.st-range-label { display: flex; justify-content: space-between; align-items: baseline; }
+.st-range-label strong { font-size: .92rem; color: var(--accent); }
+.st-range-ticks { display: flex; justify-content: space-between; font-size: .66rem; color: var(--ink-soft); }
+.st-order-type { display: flex; gap: 4px; margin: 10px 0 6px; }
+.st-order-type .btn { flex: 1 1 0; }
+.st-order-type .btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.st-order-type .btn.is-disabled { opacity: .55; }
+.st-limit { margin-bottom: 6px; }
+.st-preview {
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: 3px;
+  background: var(--bg-soft); border: 1px solid var(--line); border-radius: 10px;
+  padding: 9px 11px; margin: 10px 0;
+}
+.st-preview-row { display: flex; justify-content: space-between; gap: 10px; font-size: .8rem; }
+.st-preview-row > span { color: var(--ink-soft); }
+.st-trade-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+/* ★ 买卖按钮：类名是 st-trade-btn。
+   这里曾经写成 `.st-trade` —— 而 215 行的 `.st-trade` 是**整页的根**，
+   于是这一条（font-size:.9rem / font-weight:700 / display:inline-flex /
+   justify-content:center / cursor:pointer / border / background）整条命中到页面上：
+   全页字号被压成 13.5px、正文变粗、内容被居中、鼠标移到页面上变小手。
+   两条规则都在、控制台一条错也没有，只有量计算样式才看得见。 */
+.st-trade-btn {
+  border-radius: 10px; padding: 11px 8px; font: inherit; font-size: .9rem; font-weight: 700;
+  cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  border: 1px solid var(--line); background: var(--card); color: var(--ink);
+}
+.st-trade-btn.long { background: var(--pos-soft); border-color: var(--pos); color: var(--pos); }
+.st-trade-btn.short { background: var(--neg-soft); border-color: var(--neg); color: var(--neg); }
+.st-trade-btn.long:hover { background: var(--pos); color: #fff; }
+.st-trade-btn.short:hover { background: var(--neg); color: #fff; }
+.st-trade-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ---------- 周转借款 ---------- */
+.st-loan-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+
+/* ---------- 紧凑模式：默认就是这一套（2026-10-19 起没有那颗切换按钮） ----------
+   口径：把「说明性长文案 / 空白」收掉，把纵向空间让给图和指标；
+   **不再隐藏指标栏**（旧规则 `.compact .st-ind{display:none}` 已删 ——
+   用户要的紧凑页里指标开关是主内容之一）。 */
+.st-trade.compact .st-chart { height: 300px; }
+.st-trade.compact .st-pair-list { max-height: 240px; }
+.st-trade.compact .st-metric > strong { font-size: .86rem; }
+.st-trade.compact .st-account-equity { font-size: 1.2rem; }
+.st-trade.compact .st-cell { min-width: 64px; }
+.st-trade.compact .st-note { display: none; }
+
+/* ---------- 窄屏：单栏堆叠 + 更小的图表 ---------- */
+@media (max-width: 720px) {
+  .st-account { padding: 10px 12px; gap: 10px; }
+  .st-account-equity { font-size: 1.15rem; }
+  .st-chart { height: 230px; }
+  .st-pair-list { max-height: 210px; }
+  .st-trade-buttons { grid-template-columns: 1fr; }
+  .st-chart-meta { margin-left: 0; }
+  .st-panel { padding: 10px 11px; }
+  .st-row { padding: 6px 8px; gap: 6px; }
+  .st-cell { min-width: 60px; }
+  .st-ws-body { padding: 8px 9px; }
+  /* 拖动杠杆时能看见实时读数：把 label 与「20×」放进同一行的两端 */
+  .st-range-label { gap: 8px; }
+}
+
+/* ---------- 开局界面 ---------- */
+#startBody { margin-top: 10px; }
+#startBody label { display: block; margin-bottom: 8px; }
+#startBody label > span { display: block; color: var(--ink-soft); font-size: .84rem; }
+#startBody input[type="text"] { width: 100%; }
+#startBody h4 { margin: 14px 0 6px; }
+
+/* ---------- dev 面板 ---------- */
+.debug-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 6px; }
+
+@media (max-width: 900px) {
+  .mail-layout { grid-template-columns: 1fr; }
+  .mail-side { position: static; }
+  .mail-list { max-height: 40vh; }
+}
+
+
+/* ---------- 副图（MACD / RSI / KDJ / ATR / CCI） ----------
+   主图下面一块独立高度的区域，每格一块画布。
+   ⚠ 画布**绝对定位**：它的固有尺寸（我们每帧写入的位图宽高）一旦参与布局，
+     就会形成「写位图 → 元素尺寸变 → 容器变宽 → 再写位图」的每帧环，
+     浏览器一路报 ResizeObserver loop（主图踩过，见 tradeChart.js 里那段注释）。
+   高度由 .st-subchart 给死，所以绝对定位的画布有确定的可量尺寸。 */
+.st-subcharts { display: flex; flex-direction: column; gap: 8px; }
+.st-subchart {
+  position: relative; height: 120px; width: 100%;
+  /* 副图本身不能裁气泡：光标贴顶边时，气泡的圆角/阴影会被父级的
+     overflow:hidden 切出一条平边。画布的圆角改由 canvas 自己的
+     clip-path 负责（见下一条），气泡允许溢出到副图外。 */
+  border: 1px solid var(--line); border-radius: 10px; background: var(--card); overflow: visible;
+  cursor: crosshair;
+}
+/* 鼠标停在副图上：指标名 + 参数 + 光标那一根的每条线读数（2026-10-19 用户口径）。
+   卡片只读、不吃事件；宽度由 JS 按副图宽度夹好，贴光标右上角。 */
+.st-subchart-tip {
+  /* 副图画布是绝对定位的，且 clip-path 会形成 stacking context；
+     z-index 只有 4 时，某些尺寸下会被画布盖住（气泡连同边界一起消失）。
+     提到 30，确保读数卡片在画布和相邻副图之上，同时仍低于 modal-root(92)。 */
+  position: absolute; z-index: 30; pointer-events: none;
+  background: color-mix(in srgb, var(--card) 94%, transparent);
+  border: 1px solid var(--line); border-radius: 9px;
+  box-shadow: var(--shadow-pop);
+  padding: 5px 8px; font-size: .68rem; line-height: 1.35;
+  backdrop-filter: blur(4px);
+  /* 不再用 max-height + overflow:hidden 裁内容：小屏副图只有 64px 高，
+     气泡本身比副图高，裁了会把底边连同圆角一起切掉。 */
+  overflow: visible;
+}
+.st-subchart-tip.hidden { display: none; }
+.st-pane-tip-head { font-weight: 800; color: var(--ink); margin-bottom: 1px; font-size: .7rem; }
+.st-pane-tip-params { color: var(--ink-soft); font-size: .62rem; margin-bottom: 3px; }
+.st-pane-tip-params.hidden { display: none; }
+.st-pane-tip-sw { width: 8px; height: 3px; border-radius: 2px; flex: none; background: var(--line); }
+.st-pane-tip-k { color: var(--ink-soft); flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.st-pane-tip-v { font-family: "DM Mono", ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 600; color: var(--ink); flex: none; }
+.st-subchart-tip .st-tip-row { display: flex; align-items: center; gap: 6px; }
+.st-subchart-canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; clip-path: inset(0 round 9px); }
+.st-pane-host:empty { display: none; }
+.st-trade.compact .st-subchart { height: 100px; }
+
+/* ============================================================================
+   移动端 / 窄屏（<=1079px）：单列，顺序按用户口径重排
+     账户总览 → 交易对行情 → indicator 开关菜单 → 主图 + 副图
+     → 下单 → 持仓 → 挂单 → 结算记录 → 周转借款
+   实现：把中间那几层容器 display:contents（盒子消失、子节点提到
+   .st-trade 这个 flex 列里），再用 order 排；桌面三栏布局不受影响。
+   2026-10-19 用户口径：「手机布局优化，顺序为账户总览，交易对行情，
+   主图副图，indicator 开关菜单等，再往下是下单，持仓，挂单，结算，周转贷款」。 */
+@media (max-width: 1079px) {
+  /* 底部留出悬浮控制条的高度（76px）+ 安全区，最后一屏不被盖住 */
+  .st-trade { gap: 10px; padding-bottom: calc(94px + env(safe-area-inset-bottom)); }
+  .st-account { order: 0; }
+  /* 手机不画键位提示那一行（本来就藏了），工具栏整个收掉 */
+  .st-toolbar { display: none; }
+  /* 三层容器只负责桌面分栏；窄屏连盒子一起收掉，子节点直接进 .st-trade */
+  .st-workspace,
+  .st-col,
+  .st-chart-row,
+  .st-ws-body,
+  .st-ws-body.stacked,
+  .st-ws-pane { display: contents; }
+  /* 2026-10-19 追改：指标开关菜单提到主图**前面**（用户口径：
+     账户总览 → 交易对行情 → indicator 开关菜单 → 主图副图 → 下单 → 持仓 → 挂单 → 结算 → 借款）。 */
+  .st-market { order: 1; }
+  .st-ind { order: 2; }
+  .st-chart-panel { order: 3; }
+  .st-order-panel { order: 4; }
+  .st-positions-panel { order: 5; }
+  .st-orders-panel { order: 6; }
+  .st-history-panel { order: 7; }
+  .st-loan { order: 8; }
+  /* 指标栏在手机上横向撑满，列表给一个上限，别把下单挤出屏幕太远 */
+  .st-ind-body { max-height: 46vh; }
+  .st-ind-row { padding: 6px 7px; }
+}
+@media (max-width: 720px) {
+  /* 悬浮控制条贴底整条：两个按钮各占一半，拇指够得到 */
+  .st-dock {
+    left: 10px; right: 10px; bottom: calc(10px + env(safe-area-inset-bottom));
+    padding: 7px; gap: 7px; border-radius: 14px;
+  }
+  .st-dock .st-tool { flex: 1 1 0; padding: 11px 10px; font-size: .88rem; }
+  .st-dock .st-step { min-width: 0; }
+  /* 图表随视口高度自适应：小屏手机不把整屏让给一张图 */
+  .st-trade.compact .st-chart { height: 220px; height: clamp(168px, 25dvh, 230px); }
+  .st-trade.compact .st-subchart { height: 80px; height: clamp(62px, 9.5dvh, 88px); }
+  /* ---------- 2026-10-19 追改：手机一屏尽量同时放下主图、副图与下单 ----------
+     做法：上面三块压成「一行/一条」，把纵向空间让给图与单。 */
+  .st-account { display: flex; flex-direction: column; align-items: stretch; gap: 6px; padding: 8px 10px; }
+  .st-account-lead { min-width: 0; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .st-account-title { gap: 4px; }
+  .st-account .st-eyebrow { font-size: .6rem; }
+  .st-account .st-account-equity { font-size: 1.28rem; }
+  .st-account .st-metrics {
+    display: flex; gap: 12px; overflow-x: auto; overflow-y: hidden;
+    padding-bottom: 2px; scrollbar-width: none;
+  }
+  .st-account .st-metrics::-webkit-scrollbar { display: none; }
+  .st-account .st-metric { flex: 0 0 auto; min-height: 0; gap: 0; min-width: 0; }
+  .st-account .st-metric > span { font-size: .6rem; white-space: nowrap; }
+  .st-account .st-metric > strong { font-size: .78rem; white-space: nowrap; }
+  .st-account::after { display: none; }
+  /* 行情：手机上是一列紧凑报价（一屏能看到 5~6 个交易对），不再是横向单行 */
+  .st-market { padding: 9px 10px 8px; }
+  .st-market .st-panel-head { margin-bottom: 4px; }
+  .st-market .st-pair-list {
+    flex-direction: column; overflow-y: auto; overflow-x: hidden;
+    max-height: 210px; gap: 2px; padding-bottom: 2px;
+  }
+  .st-trade.compact .st-market .st-pair-list { max-height: 210px; }
+  .st-market .st-pair-row { flex: 0 0 auto; min-width: 0; padding: 3px 7px; }
+  /* 指标：默认一行胶囊（开关直接可点），点「展开」才是完整的参数面板 */
+  .st-ind-toggle {
+    display: inline-flex; align-items: center; justify-content: center;
+    font: inherit; font-size: .7rem; padding: 2px 8px; cursor: pointer;
+    border: 1px solid var(--line); border-radius: 6px; background: transparent; color: var(--ink-soft);
+    margin-left: auto;
+  }
+  .st-ind-toggle:hover { border-color: var(--accent); color: var(--accent); }
+  .st-ind:not(.open) .st-ind-body {
+    flex-direction: row; overflow-x: auto; overflow-y: hidden;
+    max-height: none; padding: 5px 6px 7px; gap: 6px;
+  }
+  .st-ind:not(.open) .st-ind-group { flex: 0 0 auto; flex-direction: row; margin: 0; gap: 6px; }
+  .st-ind:not(.open) .st-ind-group + .st-ind-group { margin-top: 0; }
+  .st-ind:not(.open) .st-ind-group-head { display: none; }
+  .st-ind:not(.open) .st-ind-list { flex: 0 0 auto; flex-direction: row; gap: 6px; }
+  .st-ind:not(.open) .st-ind-row {
+    flex: 0 0 auto; min-width: max-content; grid-template-columns: auto; padding: 4px 9px;
+    border: 1px solid var(--line); border-radius: 999px; background: var(--card);
+  }
+  .st-ind:not(.open) .st-ind-cn,
+  .st-ind:not(.open) .st-ind-row-tools,
+  .st-ind:not(.open) .st-ind-params { display: none; }
+  .st-ind:not(.open) .st-ind-name { font-size: .74rem; }
+  .st-ind.open .st-ind-body { max-height: 46vh; }
+  /* 图：再让一档；图例在手机上收起（颜色与数值在下面 legend 里本来就挤） */
+  .st-trade.compact .st-chart { height: 160px; height: clamp(140px, 19dvh, 190px); }
+  .st-trade.compact .st-subchart { height: 64px; height: clamp(52px, 7.5dvh, 72px); }
+  .st-legend { display: none; }
+  /* 图表控件：手机压成**一行**横向滚动（交易对 / 周期 / 根数 / 点差·日期），
+     原来三行要占 100 多像素，正好把「主图 + 副图 + 下单」挤出屏幕。 */
+  .st-chart-controls {
+    flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden;
+    gap: 6px; margin: 4px 0; padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+  .st-chart-controls::-webkit-scrollbar { display: none; }
+  .st-chart-controls > * { flex: 0 0 auto; }
+  .st-chart-controls .st-select > span { display: none; }
+  .st-chart-controls .st-select select { min-width: 96px; max-width: 128px; }
+  .st-chart-controls .st-tf .btn,
+  .st-chart-controls .st-ranges .btn { padding: 2px 6px; font-size: .68rem; }
+  .st-chart-controls .st-chart-meta { margin-left: 0; flex-wrap: nowrap; font-size: .62rem; }
+  .st-chart-panel { padding: 8px 9px 6px; }
+  /* 下单：两列字段、两列预览、按钮压到 44px 左右 */
+  .st-order-panel { padding: 9px 10px; }
+  /* 手机不画「NEW ORDER / 下单」那块头：省 34px，三个副图时下单按钮才不会被
+     教程提示行压住（字段本身就写着保证金 / 杠杆，不缺这一行标题）。 */
+  .st-order-panel .st-panel-head { display: none; }
+  .st-order-panel .st-order-pair { display: none; }
+  .st-order-panel .st-fields { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 8px; }
+  .st-order-panel .st-field > span,
+  .st-order-panel .st-field > label { font-size: .72rem; }
+  .st-order-panel .st-pct { gap: 4px; margin-top: 1px; }
+  .st-order-panel .st-pct-label { font-size: .62rem; }
+  .st-order-panel .st-pct input[type='range'] { height: 14px; }
+  .st-order-panel .st-pct strong { min-width: 26px; font-size: .66rem; }
+  .st-order-panel .st-order-type { margin: 7px 0 5px; }
+  .st-order-panel .st-preview { grid-template-columns: 1fr 1fr; gap: 1px 10px; padding: 7px 9px; margin: 7px 0; }
+  .st-order-panel .st-preview-row { font-size: .7rem; }
+  .st-order-panel .st-trade-buttons { grid-template-columns: 1fr 1fr; gap: 7px; }
+  .st-order-panel .st-trade-btn { padding: 10px 6px; font-size: .86rem; }
+  .st-history-toggle { font-size: .66rem; padding: 1px 6px; }
+  .st-account { border-radius: 12px; }
+  .st-panel { border-radius: 12px; }
+  .st-chart-panel { padding: 10px 10px 8px; }
+  .st-chart-top h3 { font-size: .98rem; }
+  .st-quote { font-size: 1.2rem; }
+}

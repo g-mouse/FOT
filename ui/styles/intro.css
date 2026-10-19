@@ -1,0 +1,178 @@
+/* ============ 开场动画（anime.js） ============
+   老鼠从洞里冒出来 → 啃奶酪 → 变成 8-bit 像素图标。
+   全屏固定层，自动播完；任何点击/按键提前结束。
+   无 JS 或跳过条件（自动化 / 减少动态）时不生成任何 DOM。 */
+.intro {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  opacity: 0;
+  background:
+    radial-gradient(ellipse at 50% 38%, rgba(0, 137, 123, .14) 0%, rgba(250, 250, 250, .96) 46%, #eceff1 100%),
+    linear-gradient(180deg, #fafafa 0%, #eceff1 100%);
+  color: #263238;
+  font-family: inherit;
+  user-select: none;
+}
+.intro::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(0, 121, 107, .05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 121, 107, .05) 1px, transparent 1px);
+  background-size: 34px 34px;
+  mask-image: radial-gradient(circle at 50% 48%, #000 10%, transparent 72%);
+}
+.intro::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(180deg, rgba(38, 50, 56, .05) 0 1px, transparent 1px 4px);
+  opacity: .35;
+}
+.intro-stage {
+  position: relative;
+  width: min(92vw, 560px);
+  height: min(64vh, 400px);
+  min-height: 300px;
+}
+.intro-hole {
+  position: absolute;
+  left: 50%;
+  bottom: 26px;
+  width: 190px;
+  height: 54px;
+  margin-left: -95px;
+  z-index: 5;
+  opacity: 0;
+  transform: scale(.2);
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 45%, #000 0 42%, #0a130e 70%, transparent 72%);
+  box-shadow: 0 0 0 2px rgba(0, 150, 136, .14), 0 0 34px rgba(0, 150, 136, .12);
+}
+.intro-hole::before,
+.intro-hole::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 150, 136, .22);
+  inset: -7px;
+  transform: rotate(-4deg);
+}
+.intro-hole::after { inset: -13px; border-color: rgba(0, 150, 136, .09); transform: rotate(6deg); }
+.intro-mouse {
+  position: absolute;
+  left: calc(50% - 104px);
+  bottom: 44px;
+  width: 208px;
+  height: 174px;
+  z-index: 4;
+  overflow: visible;
+  opacity: 0;
+  transform: translateY(92px);
+  filter: drop-shadow(0 14px 16px rgba(0, 0, 0, .4));
+}
+.intro-mouse-head { transform-box: fill-box; transform-origin: 50% 82%; }
+.intro-cheese {
+  position: absolute;
+  right: 4%;
+  bottom: 56px;
+  width: 126px;
+  height: 112px;
+  z-index: 3;
+  filter: drop-shadow(0 12px 12px rgba(0, 0, 0, .35));
+}
+.intro-crumbs { position: absolute; right: 10%; bottom: 82px; width: 90px; height: 70px; z-index: 6; pointer-events: none; }
+.intro-crumb {
+  position: absolute; width: 7px; height: 7px; opacity: 0;
+  background: #ffd166; box-shadow: 0 0 0 1px rgba(7, 16, 24, .65);
+}
+.intro-crumb:nth-child(1) { left: 2px; top: 30px; }
+.intro-crumb:nth-child(2) { left: 20px; top: 14px; width: 5px; height: 5px; }
+.intro-crumb:nth-child(3) { left: 44px; top: 36px; width: 9px; height: 5px; }
+.intro-crumb:nth-child(4) { left: 62px; top: 10px; }
+.intro-crumb:nth-child(5) { left: 30px; top: 52px; width: 4px; height: 4px; }
+.intro-crumb:nth-child(6) { left: 70px; top: 44px; width: 6px; height: 4px; }
+.intro-pixel {
+  position: absolute;
+  left: 50%;
+  top: 43%;
+  width: 188px;
+  height: 188px;
+  margin-left: -94px;
+  margin-top: -94px;
+  z-index: 7;
+  opacity: 0;
+  transform: scale(.25) rotate(-14deg);
+  filter: drop-shadow(0 0 18px #b2dfdb);
+}
+.intro-pixel svg { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+.intro-pixel rect { opacity: 0; }
+.intro-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -70px;
+  z-index: 8;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(14px);
+}
+.intro-caption strong {
+  display: block;
+  font-size: clamp(1.35rem, 3.6vw, 1.85rem);
+  letter-spacing: .32em;
+  text-indent: .32em;
+  color: #263238;
+  text-shadow: 0 0 12px rgba(178, 223, 219, .55);
+}
+.intro-caption span {
+  display: block;
+  margin-top: 5px;
+  font-size: .65rem;
+  letter-spacing: .32em;
+  text-indent: .32em;
+  color: #00796b;
+  opacity: .9;
+}
+.intro-caption em {
+  display: block;
+  margin-top: 7px;
+  font-style: normal;
+  font-size: .6rem;
+  letter-spacing: .18em;
+  color: #78909c;
+}
+.intro-skip {
+  position: absolute;
+  right: max(18px, env(safe-area-inset-right));
+  bottom: max(16px, env(safe-area-inset-bottom));
+  z-index: 20;
+  border: 1px solid #b2dfdb;
+  background: rgba(255, 255, 255, .9);
+  color: #00695c;
+  font: inherit;
+  font-size: .7rem;
+  letter-spacing: .16em;
+  padding: 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.intro-skip:hover { border-color: #00897b; color: #263238; }
+html.intro-open, html.intro-open body { overflow: hidden; }
+
+@media (max-width: 520px) {
+  .intro-stage { width: 94vw; height: min(62vh, 360px); min-height: 278px; }
+  .intro-mouse { width: 166px; height: 140px; left: calc(50% - 83px); bottom: 38px; }
+  .intro-hole { width: 156px; height: 46px; margin-left: -78px; bottom: 22px; }
+  .intro-cheese { width: 102px; height: 92px; right: 1%; bottom: 45px; }
+  .intro-pixel { width: 150px; height: 150px; margin-left: -75px; margin-top: -75px; top: 42%; }
+  .intro-caption { bottom: -56px; }
+  .intro-caption strong { letter-spacing: .22em; text-indent: .22em; }
+}
